@@ -267,4 +267,8 @@ function renderBusinesses() {
 
     container.appendChild(card);
   });
+
+  // Update 5: Always render the Yacht Empire card after the regular businesses.
+  // renderYachtBusiness() is defined in yachts.js (loads before game.js).
+  if (typeof renderYachtBusiness === "function") renderYachtBusiness();
 }

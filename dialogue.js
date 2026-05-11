@@ -136,14 +136,65 @@ const DIALOGUE_TRIGGERS = {
     "Bill Naire is all that stands between you and the crown. One final push, {pronoun}. ONE FINAL PUSH."
   ],
 
+  // ── SUPER-TIER RANK MILESTONES (Update 5) ─────────────────
+  "rank_-1": [
+    "BILL NAIRE IS DETHRONED! But wait... there are people ABOVE him?!",
+    "Sir Spendsalot is looking down at you, {pronoun}. LOOKING DOWN. That ends TODAY.",
+    "Half a BILLION dollars to beat him. You've come so far. Don't stop now."
+  ],
+
+  "rank_-2": [
+    "Goldie Vaultsworth hoards gold like a dragon hoards treasure. TAKE IT ALL.",
+    "One BILLION dollars. That's ten with eight zeroes. You just passed it, {pronoun}.",
+    "Uncle Funds is literally shaking right now. SHAKING."
+  ],
+
+  "rank_-3": [
+    "THE YACHT LORD. The person who NAMED themselves The Yacht Lord.",
+    "Two and a half BILLION. And you sailed right past them like it was nothing.",
+    "Their yachts are now YOUR yachts. Metaphorically. Actually. BOTH."
+  ],
+
+  "rank_-4": [
+    "Madame Trillionaire is calling her lawyers. SEVENTEEN of them.",
+    "FIVE BILLION DOLLARS net worth, {pronoun}. Do you understand what you've DONE?",
+    "One more. Just ONE more rival stands between you and total domination. THE MONEY GHOST."
+  ],
+
   // ── WIN ────────────────────────────────────────────────────
   win: [
     "...Is this real? Am I dreaming? PINCH ME. ...OW. Okay it's real.",
-    "BILL NAIRE IS DETHRONED! TWO HUNDRED MILLION DOLLARS! YOU DID IT!",
-    "You. My {pronoun}. Who I believed in from DAY ONE. You are now the RICHEST PERSON IN THE WORLD.",
-    "I taught you EVERYTHING. The properties, the stocks, the businesses, the manager — ALL ME.",
+    "THE MONEY GHOST. TEN BILLION DOLLARS. GONE. Defeated by my {pronoun}!",
+    "You didn't just build an empire. You became a LEGEND. A MYTH. A GHOST STORY.",
+    "I taught you EVERYTHING. The properties, stocks, businesses, yachts — ALL ME.",
     "Well. You did the clicking. But I was VERY encouraging.",
-    "EMPIRE. You built one. Uncle Funds has NEVER been more proud. Go check your win screen! GO!"
+    "EMPIRE. You built one. Uncle Funds has NEVER been more proud. Check your win screen!"
+  ],
+
+  // ── CHAPTER 5: YACHT FLEET (Update 5) ────────────────────
+  ch5_unlock: [
+    "ONE HUNDRED MILLION DOLLARS. {pronoun}. I need to sit down. I AM SITTING DOWN.",
+    "The Yacht Fleet is NOW OPEN. Look at the bottom panel. LOOK AT IT.",
+    "You can buy actual YACHTS. And rent them to rich people. WHO ARE LESS RICH THAN YOU.",
+    "The ocean is yours now, {pronoun}. The whole thing. Uncle Funds says so."
+  ],
+
+  first_yacht_business: [
+    "FIVE HUNDRED THOUSAND DOLLARS on a yacht BUSINESS?! That's not spending. That's INVESTING.",
+    "You now own a company that owns boats that rich people pay to borrow. This is the DREAM.",
+    "Upgrade that business, {pronoun}. Every level unlocks BIGGER boats. BETTER money."
+  ],
+
+  first_yacht: [
+    "YOU BOUGHT A YACHT. An actual YACHT. For RENTING. For PROFIT.",
+    "Uncle Funds once rented a paddleboat. This is slightly more impressive.",
+    "The money rolls in whether you're watching or not, {pronoun}. That's the nautical way."
+  ],
+
+  yacht_empire_maxed: [
+    "FLEET OVERLORD. The title. The myth. The LEGEND. That's YOU now.",
+    "Every ocean on Earth has one of your boats in it. Probably. The math works out.",
+    "There is nowhere higher to climb in the yacht world, {pronoun}. You ARE the yacht world."
   ],
 
   // ── GENERAL TIPS (random encouragement) ───────────────────

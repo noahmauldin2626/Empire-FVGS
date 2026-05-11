@@ -33,7 +33,7 @@
 // Update this string each time you ship a new update.
 // The changelog modal auto-shows once when this doesn't match
 // what's stored in gameState.lastSeenChangelog.
-const CHANGELOG_VERSION = "3";
+const CHANGELOG_VERSION = "5";
 
 // ── ACTIVE USERNAME ────────────────────────────────────────────
 // Holds the name the player typed on the username screen.
@@ -57,7 +57,7 @@ const gameState = {
   playerGender: "",      // "male" or "female"
 
   // --- Progress ---
-  chapter: 0,            // 0=intro, 1=properties, 2=stocks+crypto, 3=business, 4=milestone
+  chapter: 0,            // 0=intro, 1=properties, 2=stocks+crypto, 3=business, 4=milestone, 5=yachts
 
   // --- Owned Assets (Investments — affect net worth and income) ---
   ownedProperties: {},   // { propertyId: tierNumber }  e.g. { funky_flats: 2 }
@@ -68,6 +68,10 @@ const gameState = {
   // --- Crypto (Update 3 — Investment: affects net worth and income) ---
   ownedCoins:   {},      // { coinId: coinsOwned }       e.g. { bytecoin: 2 }
   cryptoPrices: {},      // { coinId: currentPrice }     changes over time
+
+  // --- Yachts (Update 5 — Investment: affects net worth and income) ---
+  yachtBusinessLevel: 0, // 0 = not purchased, 1–4 = current level
+  ownedYachts:        {}, // { yachtId: tierNumber }     e.g. { sea_biscuit: 2 }
 
   // --- One-time tutorial flags (Update 3.5) ---
   // Using a saved flag instead of a share-count check means selling all
@@ -227,6 +231,10 @@ function fillMissingFields() {
       initCryptoPrices();
     }
   }
+
+  // --- Fields added in Update 5 ---
+  if (gameState.yachtBusinessLevel === undefined) gameState.yachtBusinessLevel = 0;
+  if (gameState.ownedYachts        === undefined) gameState.ownedYachts        = {};
 }
 
 // ── LOAD GAME ──────────────────────────────────────────────────
@@ -347,7 +355,11 @@ function playAgain() {
     lastSeenChangelog: savedChangelog, // keep this — player already saw the changelog
 
     // Update 3.5 keys: reset tutorial flag so a brand new run gets the tutorial
-    hasSeenFirstStock: false
+    hasSeenFirstStock: false,
+
+    // Update 5 keys:
+    yachtBusinessLevel: 0,
+    ownedYachts: {}
   });
 
   document.getElementById("win-screen").style.display   = "none";
@@ -364,21 +376,28 @@ function recalculateStats() {
   // --- Click Value ---
   const propClickBonus     = calculatePropertyClickBonus();
   const businessClickBonus = calculateBusinessClickBonus();
-  gameState.clickValue = 1 + propClickBonus + businessClickBonus;
+  const yachtClickBonus    = calculateYachtBusinessClickBonus(); // Update 5
+  gameState.clickValue = 1 + propClickBonus + businessClickBonus + yachtClickBonus;
 
   // --- Passive Income Per Second ---
-  const propIncome      = calculatePropertyIncome();
-  const stockDividends  = calculateStockDividends();
-  const bizIncome       = calculateBusinessIncome();
-  const cryptoDividends = calculateCryptoDividends(); // Update 3: crypto income
-  gameState.passiveIncome = propIncome + stockDividends + bizIncome + cryptoDividends;
+  const propIncome       = calculatePropertyIncome();
+  const stockDividends   = calculateStockDividends();
+  const bizIncome        = calculateBusinessIncome();
+  const cryptoDividends  = calculateCryptoDividends();  // Update 3
+  const yachtBizIncome   = calculateYachtBusinessIncome();  // Update 5
+  const yachtFleetIncome = calculateYachtFleetIncome();     // Update 5
+  gameState.passiveIncome = propIncome + stockDividends + bizIncome
+                          + cryptoDividends + yachtBizIncome + yachtFleetIncome;
 
   // --- Net Worth ---
   const propNetWorth  = calculatePropertyNetWorth();
   const stockValue    = calculateStockNetWorth();
   const bizNetWorth   = calculateBusinessNetWorth();
-  const cryptoValue   = calculateCryptoNetWorth();    // Update 3: crypto value
-  gameState.netWorth  = gameState.cash + propNetWorth + stockValue + bizNetWorth + cryptoValue;
+  const cryptoValue   = calculateCryptoNetWorth();       // Update 3
+  const yachtBizNW    = calculateYachtBusinessNetWorth(); // Update 5
+  const yachtFleetNW  = calculateYachtFleetNetWorth();    // Update 5
+  gameState.netWorth  = gameState.cash + propNetWorth + stockValue + bizNetWorth
+                      + cryptoValue + yachtBizNW + yachtFleetNW;
   // Note: Cars (ownedCars) and Home (homeTier) are intentionally excluded — vanity only.
 }
 
@@ -403,9 +422,10 @@ function mainGameLoop() {
 // ── CHAPTER UNLOCK CHECKS ──────────────────────────────────────
 
 function checkChapterUnlocks() {
-  if (gameState.chapter < 2 && gameState.totalEarned >= 2000)  unlockChapter(2);
-  if (gameState.chapter < 3 && gameState.netWorth   >= 10000)  unlockChapter(3);
-  if (gameState.chapter < 4 && gameState.netWorth   >= 25000)  unlockChapter(4);
+  if (gameState.chapter < 2 && gameState.totalEarned >= 2000)      unlockChapter(2);
+  if (gameState.chapter < 3 && gameState.netWorth   >= 10000)      unlockChapter(3);
+  if (gameState.chapter < 4 && gameState.netWorth   >= 25000)      unlockChapter(4);
+  if (gameState.chapter < 5 && gameState.netWorth   >= 100000000)  unlockChapter(5); // Update 5: $100M
 }
 
 function unlockChapter(chapterNum) {
@@ -437,6 +457,13 @@ function unlockChapter(chapterNum) {
     renderManager();
     triggerDialogue("ch4_unlock");
   }
+
+  // Update 5: Yacht Fleet panel unlocks at $100M net worth
+  if (chapterNum === 5) {
+    const el = document.getElementById("yacht-fleet-section");
+    if (el) { el.classList.remove("panel-locked"); renderYachtFleet(); }
+    triggerDialogue("ch5_unlock");
+  }
 }
 
 // ── RICH LIST RANK CHECKS ──────────────────────────────────────
@@ -444,7 +471,10 @@ function unlockChapter(chapterNum) {
 const RANK_DIALOGUES = {
   10: "rank_10", 9: "rank_9", 8: "rank_8", 7: "rank_7",
   6: "rank_6",   5: "rank_5", 4: "rank_4", 3: "rank_3",
-  2: "rank_2",   0: "win"
+  2: "rank_2",   0: "win",
+  // Update 5: Super-Tier ranks use string keys (JS coerces negative ints to strings)
+  "-1": "rank_-1", "-2": "rank_-2",
+  "-3": "rank_-3", "-4": "rank_-4"
 };
 
 function checkRichListRank() {
@@ -522,7 +552,11 @@ function updateUI() {
   setText("display-click-center", formatMoney(gameState.clickValue));
 
   const rank = gameState.currentRank;
-  setText("display-rank", rank === 11 ? "Unranked" : rank === 0 ? "👑 #1!" : "#" + rank);
+  const rankDisplay = rank === 11 ? "Unranked"
+    : rank === 0 ? "👑 #1!"
+    : rank < 0   ? "S" + Math.abs(rank)  // Update 5: Super-Tier display
+    : "#" + rank;
+  setText("display-rank", rankDisplay);
 
   if (activeUsername) {
     const nameParts = [activeUsername];
@@ -534,7 +568,8 @@ function updateUI() {
   if (gameState.chapter >= 1) renderProperties();
   if (gameState.chapter >= 2) renderStocks();
   if (gameState.chapter >= 2) renderCrypto();   // Update 3: crypto lives alongside stocks
-  if (gameState.chapter >= 3) renderBusinesses();
+  if (gameState.chapter >= 3) renderBusinesses(); // also calls renderYachtBusiness() at end
+  if (gameState.chapter >= 5) renderYachtFleet(); // Update 5: yacht fleet panel
 
   // Update 3: Manager is always visible from game start — render it every tick
   renderManager();
@@ -695,6 +730,17 @@ function startGame() {
   if (managerPanel) {
     managerPanel.classList.remove("panel-locked"); // ensure it's never locked
     renderManager();
+  }
+
+  // ── Yacht Fleet panel (Update 5, Chapter 5) ───────────────
+  const yachtPanel = document.getElementById("yacht-fleet-section");
+  if (yachtPanel) {
+    if (gameState.chapter < 5) {
+      yachtPanel.classList.add("panel-locked");
+    } else {
+      yachtPanel.classList.remove("panel-locked");
+      renderYachtFleet();
+    }
   }
 
   recalculateStats();
