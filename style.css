@@ -1,0 +1,1316 @@
+/* ═══════════════════════════════════════════════════════════
+   EMPIRE — style.css
+   All visual styling for the game.
+   Color scheme: Money green + Gold on a bright background.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── GOOGLE FONTS ─────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+/* ── RESET & BASE ─────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Nunito', 'Arial Rounded MT Bold', Arial, sans-serif;
+  background: linear-gradient(160deg, #e8f5e9 0%, #f1f8e9 100%);
+  min-height: 100vh;
+  color: #1a2e1a;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, .panel-title {
+  font-family: 'Fredoka One', 'Comic Sans MS', cursive;
+  letter-spacing: 0.5px;
+}
+
+/* ── INTRO SCREEN ─────────────────────────────────────────── */
+#intro-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+  background: linear-gradient(160deg, #1b5e20 0%, #2e7d32 50%, #388e3c 100%);
+  color: #fff;
+}
+
+.intro-logo {
+  font-family: 'Fredoka One', cursive;
+  font-size: 5rem;
+  color: #ffd700;
+  text-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 30px rgba(255,215,0,0.4);
+  margin-bottom: 0.25rem;
+  letter-spacing: 4px;
+}
+
+.intro-tagline {
+  font-size: 1.1rem;
+  color: #a5d6a7;
+  margin-bottom: 2.5rem;
+  font-style: italic;
+}
+
+.intro-uncle {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.intro-uncle-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.3rem;
+  color: #ffd700;
+  margin-bottom: 0.3rem;
+}
+
+.intro-uncle-quote {
+  color: #c8e6c9;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  font-style: italic;
+}
+
+.intro-pick-label {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.4rem;
+  color: #ffd700;
+  margin-bottom: 1.2rem;
+}
+
+.character-select-row {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.character-card {
+  background: rgba(255,255,255,0.08);
+  border: 2px solid rgba(255,215,0,0.4);
+  border-radius: 20px;
+  padding: 1.8rem 2rem;
+  width: 200px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s, border-color 0.2s;
+  text-align: center;
+}
+
+.character-card:hover {
+  transform: translateY(-6px) scale(1.04);
+  background: rgba(255,215,0,0.15);
+  border-color: #ffd700;
+}
+
+.char-emoji   { font-size: 3.5rem; display: block; margin-bottom: 0.5rem; }
+.char-name    { font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: #ffd700; display: block; margin-bottom: 0.4rem; }
+.char-desc    { font-size: 0.82rem; color: #c8e6c9; line-height: 1.4; }
+
+.intro-footer {
+  margin-top: 2rem;
+  color: #81c784;
+  font-size: 0.85rem;
+}
+
+/* ── WIN SCREEN ───────────────────────────────────────────── */
+#win-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  color: #fff;
+  padding: 2rem;
+}
+
+.win-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 4rem;
+  color: #ffd700;
+  text-shadow: 0 0 30px rgba(255,215,0,0.8);
+  margin-bottom: 0.5rem;
+  animation: winPulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes winPulse {
+  from { text-shadow: 0 0 20px rgba(255,215,0,0.6); }
+  to   { text-shadow: 0 0 60px rgba(255,215,0,1), 0 0 100px rgba(255,215,0,0.5); }
+}
+
+.win-emoji { font-size: 5rem; margin-bottom: 1rem; }
+
+.win-congrats {
+  font-size: 1.2rem;
+  color: #a5d6a7;
+  margin-bottom: 2rem;
+  max-width: 500px;
+}
+
+.win-stats {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,215,0,0.3);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  text-align: left;
+  min-width: 300px;
+}
+
+.win-stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  font-size: 0.95rem;
+}
+
+.win-stat-row:last-child { border-bottom: none; }
+.win-stat-label { color: #a5d6a7; }
+.win-stat-value { font-weight: 800; color: #ffd700; }
+
+/* ── TOP BAR ──────────────────────────────────────────────── */
+#game-screen { display: none; }
+
+#top-bar {
+  background: linear-gradient(90deg, #1b5e20, #2e7d32);
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.top-logo {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.5rem;
+  color: #ffd700;
+  letter-spacing: 2px;
+  margin-right: 0.5rem;
+}
+
+.top-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 0.3rem 0.8rem;
+  min-width: 90px;
+}
+
+.top-stat-label {
+  font-size: 0.65rem;
+  color: #a5d6a7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.top-stat-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #ffd700;
+  font-family: 'Fredoka One', cursive;
+}
+
+.top-player-name {
+  margin-left: auto;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  color: #c8e6c9;
+}
+
+.top-reset-btn {
+  margin-left: 0.5rem;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: 'Nunito', sans-serif;
+}
+
+.top-reset-btn:hover { background: rgba(255,0,0,0.25); }
+
+/* ── MAIN GAME LAYOUT ─────────────────────────────────────── */
+#game-content {
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  gap: 0.8rem;
+  padding: 0.8rem;
+  min-height: calc(100vh - 130px); /* leave room for top bar + bottom panel */
+  align-items: start;
+}
+
+/* ── PANELS ───────────────────────────────────────────────── */
+.panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+  border: 2px solid #e8f5e9;
+}
+
+.panel-header {
+  background: linear-gradient(90deg, #2e7d32, #388e3c);
+  color: #fff;
+  padding: 0.7rem 1rem;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel-body {
+  padding: 0.7rem;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Scrollbar styling */
+.panel-body::-webkit-scrollbar { width: 5px; }
+.panel-body::-webkit-scrollbar-track { background: #f1f8e9; }
+.panel-body::-webkit-scrollbar-thumb { background: #81c784; border-radius: 4px; }
+
+/* Locked panels (chapters not yet unlocked) */
+.panel-locked .panel-body {
+  filter: blur(3px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.panel-locked .panel-header::after {
+  content: " 🔒 LOCKED";
+  font-size: 0.75rem;
+  background: rgba(0,0,0,0.3);
+  padding: 0.1rem 0.5rem;
+  border-radius: 8px;
+  margin-left: auto;
+}
+
+/* ── CENTER PANEL ─────────────────────────────────────────── */
+#center-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+/* Player portrait above the click button */
+.player-portrait-wrap {
+  font-size: 3rem;
+  background: #fff;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  border: 3px solid #ffd700;
+}
+
+/* The big clickable money button */
+#money-btn {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff9c4, #ffd700 50%, #f9a825);
+  border: 5px solid #f57f17;
+  box-shadow:
+    0 6px 24px rgba(249,168,37,0.6),
+    inset 0 -4px 8px rgba(0,0,0,0.15),
+    inset 0 4px 8px rgba(255,255,255,0.4);
+  cursor: pointer;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: #5d4037;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  transition: transform 0.1s, box-shadow 0.1s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#money-btn:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 8px 32px rgba(249,168,37,0.8),
+    inset 0 -4px 8px rgba(0,0,0,0.15);
+}
+
+#money-btn:active,
+#money-btn.btn-pulse {
+  transform: scale(0.94);
+  box-shadow: 0 3px 10px rgba(249,168,37,0.4);
+}
+
+.money-btn-icon { font-size: 2.5rem; }
+.money-btn-label { font-size: 0.95rem; }
+
+/* Click value indicator */
+.click-value-display {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1rem;
+  color: #2e7d32;
+  background: #fff;
+  padding: 0.4rem 1.2rem;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  border: 2px solid #c8e6c9;
+}
+
+/* ── RICH LIST DISPLAY ────────────────────────────────────── */
+#rich-list-display {
+  width: 100%;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  overflow: hidden;
+  border: 2px solid #e8f5e9;
+}
+
+.richlist-title {
+  background: linear-gradient(90deg, #1b5e20, #2e7d32);
+  color: #ffd700;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  padding: 0.5rem 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+.richlist-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  border-bottom: 1px solid #f1f8e9;
+  transition: background 0.2s;
+}
+
+.richlist-entry.beaten {
+  background: #f1f8e9;
+  color: #bdbdbd;
+  text-decoration: line-through;
+}
+
+.richlist-entry.next-target {
+  background: #fff9c4;
+  font-weight: 700;
+}
+
+.richlist-entry.player-entry {
+  background: linear-gradient(90deg, #e8f5e9, #f1f8e9);
+  font-weight: 800;
+  color: #1b5e20;
+  border-bottom: none;
+}
+
+.richlist-rank  { width: 28px; text-align: right; font-weight: 700; color: #757575; }
+.richlist-emoji { width: 20px; text-align: center; }
+.richlist-name  { flex: 1; }
+.richlist-worth { font-weight: 700; color: #2e7d32; font-size: 0.72rem; }
+.richlist-check { color: #4caf50; margin-left: 2px; }
+.richlist-arrow { color: #f57f17; font-weight: 800; font-size: 0.7rem; margin-left: 2px; }
+
+/* ── ASSET CARDS ──────────────────────────────────────────── */
+.asset-card {
+  background: #f9fbe7;
+  border: 2px solid #dcedc8;
+  border-radius: 12px;
+  padding: 0.7rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.asset-card.owned {
+  background: #fff;
+  border-color: #a5d6a7;
+  box-shadow: 0 1px 6px rgba(76,175,80,0.12);
+}
+
+.asset-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.asset-emoji { font-size: 1.8rem; line-height: 1; flex-shrink: 0; }
+
+.asset-name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.asset-name-block strong { font-size: 0.92rem; color: #1a2e1a; line-height: 1.2; }
+.asset-desc  { font-size: 0.75rem; color: #757575; line-height: 1.3; }
+
+.asset-stats {
+  font-size: 0.8rem;
+  color: #388e3c;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+/* Tier badge */
+.tier-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  color: #fff;
+  width: fit-content;
+}
+
+.tier-1 { background: #78909c; }   /* grey — Rundown */
+.tier-2 { background: #1976d2; }   /* blue — Decent  */
+.tier-3 { background: #7b1fa2; }   /* purple — Luxury / Level 4 */
+.tier-4 { background: #7b1fa2; }
+
+/* Stock-specific */
+.stock-ticker { font-size: 0.7rem; color: #9e9e9e; font-family: monospace; }
+.stock-price-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
+.stock-price { font-size: 1.1rem; font-weight: 800; font-family: 'Fredoka One', cursive; }
+.stock-price.price-up   { color: #2e7d32; }
+.stock-price.price-down { color: #c62828; }
+.stock-trend { font-size: 1.1rem; }
+.stock-value-row { font-size: 0.75rem; color: #757575; margin-bottom: 0.5rem; }
+.stock-btn-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+/* Manager section */
+.manager-intro { text-align: center; padding: 0.5rem; }
+.manager-intro .manager-emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.manager-intro p { font-size: 0.82rem; color: #555; margin-bottom: 0.7rem; line-height: 1.4; }
+
+.manager-active { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.7rem; }
+.manager-portrait { font-size: 2.5rem; }
+.manager-info { display: flex; flex-direction: column; gap: 0.3rem; }
+.manager-info strong { font-size: 0.95rem; color: #1a2e1a; }
+.manager-speed { font-size: 0.75rem; color: #2e7d32; font-weight: 600; }
+
+/* ── BUTTONS ──────────────────────────────────────────────── */
+.btn {
+  display: inline-block;
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 0.82rem;
+  text-align: center;
+  transition: transform 0.1s, filter 0.1s;
+  line-height: 1.3;
+}
+
+.btn:active { transform: scale(0.97); }
+
+/* Green — buy a new asset */
+.btn-buy {
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(46,125,50,0.35);
+}
+.btn-buy:hover { filter: brightness(1.1); }
+
+/* Orange — upgrade an owned asset */
+.btn-upgrade {
+  background: linear-gradient(135deg, #fb8c00, #e65100);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(230,81,0,0.35);
+}
+.btn-upgrade:hover { filter: brightness(1.1); }
+
+/* Purple — maxed out, no action */
+.btn-maxed {
+  background: linear-gradient(135deg, #9c27b0, #6a1b9a);
+  color: #fff;
+  cursor: default;
+  opacity: 0.85;
+}
+
+/* Grey — can't afford yet */
+.btn-locked {
+  background: #e0e0e0;
+  color: #9e9e9e;
+  cursor: not-allowed;
+}
+
+/* Stock sell buttons */
+.btn-sell {
+  background: linear-gradient(135deg, #e53935, #b71c1c);
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(183,28,28,0.3);
+  width: auto;
+  flex: 1;
+}
+
+.btn-sell-all {
+  background: linear-gradient(135deg, #b71c1c, #7f0000);
+  color: #fff;
+  width: auto;
+  flex: 1;
+}
+
+/* Win screen play again */
+.btn-play-again {
+  background: linear-gradient(135deg, #ffd700, #f57f17);
+  color: #5d4037;
+  font-size: 1.1rem;
+  padding: 0.8rem 2rem;
+  border-radius: 14px;
+  width: auto;
+  border: none;
+  cursor: pointer;
+  font-family: 'Fredoka One', cursive;
+  font-weight: normal;
+  box-shadow: 0 4px 16px rgba(255,215,0,0.5);
+}
+
+/* Character select buttons */
+.character-card button {
+  margin-top: 0.8rem;
+  background: linear-gradient(135deg, #ffd700, #f9a825);
+  color: #5d4037;
+  border: none;
+  border-radius: 10px;
+  padding: 0.5rem 1.2rem;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* ── BOTTOM PANEL ─────────────────────────────────────────── */
+#bottom-panel {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 0.8rem;
+  padding: 0 0.8rem 0.8rem;
+}
+
+/* ── UNCLE FUNDS POPUP ────────────────────────────────────── */
+#uncle-popup {
+  display: none;
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  z-index: 500;
+  max-width: 420px;
+  width: calc(100vw - 3rem);
+  animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.uncle-popup-inner {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-end;
+}
+
+.uncle-portrait-wrap {
+  flex-shrink: 0;
+  width: 70px;
+  height: 70px;
+  background: #1b5e20;
+  border-radius: 50%;
+  border: 3px solid #ffd700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+}
+
+.uncle-speech-bubble {
+  background: #fff;
+  border: 2px solid #ffd700;
+  border-radius: 16px 16px 16px 4px;
+  padding: 0.9rem 1rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  flex: 1;
+}
+
+.uncle-name-tag {
+  font-family: 'Fredoka One', cursive;
+  color: #f57f17;
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+}
+
+#uncle-dialogue-text {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #1a2e1a;
+  margin-bottom: 0.7rem;
+}
+
+#uncle-next-btn {
+  display: block;
+  width: 100%;
+  padding: 0.45rem 0.8rem;
+  background: linear-gradient(135deg, #ffd700, #f9a825);
+  color: #5d4037;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+#uncle-next-btn:hover { filter: brightness(1.08); }
+
+/* ── FLOATING MONEY ANIMATION ─────────────────────────────── */
+.floating-money {
+  position: fixed;
+  pointer-events: none;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.3rem;
+  animation: floatUp 1s ease-out forwards;
+  z-index: 9999;
+  transform: translateX(-50%);
+}
+
+.click-float   { color: #ffd700; text-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+.manager-float { color: #81d4fa; font-size: 0.95rem; }
+
+@keyframes floatUp {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-70px); }
+}
+
+/* ── TOAST NOTIFICATION ───────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #212121;
+  color: #fff;
+  padding: 0.6rem 1.4rem;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  z-index: 800;
+  animation: toastIn 0.3s ease-out;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── SCROLLBAR (global) ───────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f8e9; }
+::-webkit-scrollbar-thumb { background: #81c784; border-radius: 4px; }
+
+/* ── UTILITY ──────────────────────────────────────────────── */
+.text-gold   { color: #ffd700; }
+.text-green  { color: #2e7d32; }
+.text-muted  { color: #9e9e9e; }
+.mt-sm       { margin-top: 0.5rem; }
+
+/* ══════════════════════════════════════════════════════════════
+   NEW STYLES — Username screen + save indicator
+   Added for the multiplayer save / cloud system.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── USERNAME SCREEN ──────────────────────────────────────────
+   Matches the intro screen look exactly — same dark green,
+   same fonts, same centered layout.                           */
+#username-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+  background: linear-gradient(160deg, #1b5e20 0%, #2e7d32 50%, #388e3c 100%);
+  color: #fff;
+}
+
+/* The white card that holds the input field and button */
+.username-box {
+  background: rgba(255, 255, 255, 0.10);
+  border: 2px solid rgba(255, 215, 0, 0.35);
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
+  max-width: 420px;
+  width: 100%;
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* "Enter your player name:" label above the input */
+.username-label {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: #ffd700;
+}
+
+/* The text input field */
+#username-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.4rem;
+  text-align: center;
+  letter-spacing: 2px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+#username-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 1px;
+}
+
+#username-input:focus {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.1);
+}
+
+/* Small grey hint text below the input */
+.username-hint {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.4;
+}
+
+/* The big "Enter EMPIRE" submit button */
+#username-submit-btn {
+  background: linear-gradient(135deg, #ffd700, #f9a825);
+  color: #5d4037;
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s;
+  margin-top: 0.25rem;
+}
+
+#username-submit-btn:hover  { filter: brightness(1.1); transform: scale(1.03); }
+#username-submit-btn:active { transform: scale(0.97); }
+
+/* ── STOCK QUANTITY BUTTONS ───────────────────────────────────
+   The four compact buy/sell buttons that sit in a row on each
+   stock card: x1, x10, x100, Max / All                       */
+
+/* Row label above each button group ("📈 Buy:" / "📉 Sell:") */
+.stock-btn-label {
+  font-size: 0.70rem;
+  font-weight: 700;
+  color: #9e9e9e;
+  margin-top: 0.45rem;
+  margin-bottom: 0.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* The flex row that holds the four buttons */
+.stock-qty-row {
+  display: flex;
+  gap: 0.3rem;
+}
+
+/* Every button inside a qty row shares these base overrides.
+   They shrink to equal widths via flex: 1 and have smaller
+   text/padding than regular asset-card buttons. */
+.stock-qty-btn {
+  flex: 1;           /* all four buttons split the row equally */
+  padding: 0.35rem 0;
+  font-size: 0.76rem;
+  font-weight: 800;
+  min-width: 0;      /* allow flex to shrink below content size */
+  width: auto;       /* override the 100%-width default on .btn */
+}
+
+/* Gold / orange — the Max buy button stands out so players
+   notice it's special (buys the most they can afford) */
+.btn-buy-max {
+  background: linear-gradient(135deg, #ffd700, #f57f17);
+  color: #5d4037;
+  box-shadow: 0 2px 5px rgba(245, 127, 23, 0.35);
+}
+.btn-buy-max:hover   { filter: brightness(1.1); }
+.btn-buy-max:active  { transform: scale(0.97); }
+
+/* ── MANAGER SALARY DISPLAY ───────────────────────────────────
+   Shown in the manager panel so the player always knows the cost */
+
+/* Italic note on the hire screen before the manager is hired */
+.manager-salary-note {
+  font-size: 0.78rem;
+  color: #ff8a65;   /* warm orange — a gentle warning colour */
+  margin-bottom: 0.6rem;
+  font-style: italic;
+}
+
+/* Salary line in the active manager display */
+.manager-salary {
+  font-size: 0.75rem;
+  color: #9e9e9e;
+  font-weight: 600;
+}
+
+/* Net-per-tap coloured spans inside .manager-salary */
+.salary-positive { color: #43a047; font-weight: 800; } /* green  — profitable */
+.salary-negative { color: #e53935; font-weight: 800; } /* red    — losing money */
+
+/* Disabled state while loading / checking Firebase */
+#username-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Red error message shown for invalid names */
+.username-error {
+  color: #ff8a80;
+  font-size: 0.85rem;
+  font-weight: 700;
+  min-height: 1.2em; /* reserve space so layout doesn't jump */
+}
+
+/* Gold pulsing "Checking for your save..." text */
+.username-loading {
+  color: #ffd700;
+  font-size: 0.9rem;
+  font-style: italic;
+  animation: loadingPulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes loadingPulse {
+  from { opacity: 0.6; }
+  to   { opacity: 1.0; }
+}
+
+/* ── SAVE INDICATOR ───────────────────────────────────────────
+   A small pill in the top bar that shows where the last save
+   went — ☁️ cloud or 💾 local only.                          */
+.save-indicator {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  transition: background 0.4s, color 0.4s;
+}
+
+/* Green pill — saved to Firebase cloud successfully */
+.save-indicator.save-cloud {
+  background: rgba(76, 175, 80, 0.3);
+  color: #a5d6a7;
+  border: 1px solid rgba(76, 175, 80, 0.4);
+}
+
+/* Yellow pill — saved locally only (offline or Firebase not set up) */
+.save-indicator.save-local {
+  background: rgba(255, 193, 7, 0.25);
+  color: #ffd54f;
+  border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+/* Grey pill — save in progress */
+.save-indicator.save-saving {
+  background: rgba(255, 255, 255, 0.1);
+  color: #bdbdbd;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: loadingPulse 0.8s ease-in-out infinite alternate;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UPDATE 3 STYLES
+   New styles for: tabbed panel, modals, vehicle cards, home
+   display, rarity badges, changelog, and top bar action buttons.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── TOP BAR ACTION BUTTONS ───────────────────────────────────
+   The 4 new buttons in the top bar: Dealership, Garage,
+   My Home, Changelog. Styled differently from the red Reset
+   button — gold tint to match the game's money theme.        */
+.top-action-btn {
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  color: #ffd700;
+  border-radius: 8px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.top-action-btn:hover {
+  background: rgba(255, 215, 0, 0.28);
+}
+
+/* ── INVESTMENT PANEL TABS ────────────────────────────────────
+   The right panel now has two tabs: 📈 Stocks and 🪙 Crypto.
+   Tab buttons sit inside the panel-header and fill its width.  */
+
+/* Override panel-header's default padding/gap so tabs fill edge-to-edge */
+.tab-header {
+  padding: 0;
+  gap: 0;
+}
+
+/* Each tab button splits the header space equally */
+.tab-btn {
+  flex: 1;
+  padding: 0.7rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;           /* square so it fills the header cleanly */
+  color: rgba(255, 255, 255, 0.65);
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  border-bottom: 3px solid transparent; /* gold underline when active */
+}
+
+.tab-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Active tab: gold text + gold underline + subtle gold background */
+.tab-btn.tab-active {
+  color: #ffd700;
+  border-bottom-color: #ffd700;
+  background: rgba(255, 215, 0, 0.12);
+}
+
+/* ── MODAL OVERLAY ────────────────────────────────────────────
+   Base styles shared by all 4 modal overlays:
+   Dealership, Garage, My Home, Changelog.
+   Each modal is a full-screen dark backdrop with a centred card. */
+.modal-overlay {
+  position: fixed;
+  inset: 0;                   /* covers the entire screen */
+  background: rgba(0, 0, 0, 0.80);
+  z-index: 600;               /* above game panels (100), below win screen (999) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: popIn 0.25s ease-out;
+}
+
+/* The white card that holds the modal content */
+.modal-inner {
+  background: #fff;
+  border-radius: 20px;
+  max-width: 620px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+/* Scrollbar inside modal */
+.modal-inner::-webkit-scrollbar       { width: 5px; }
+.modal-inner::-webkit-scrollbar-track { background: #f1f8e9; }
+.modal-inner::-webkit-scrollbar-thumb { background: #81c784; border-radius: 4px; }
+
+/* Green header bar at the top of each modal */
+.modal-header {
+  background: linear-gradient(90deg, #1b5e20, #2e7d32);
+  color: #ffd700;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  padding: 1rem 1.2rem;
+  border-radius: 18px 18px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;                     /* stays visible while scrolling the modal body */
+  z-index: 1;
+}
+
+/* The circular X button in the top-right of every modal */
+.modal-close-btn {
+  background: rgba(255, 255, 255, 0.20);
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* The scrollable content area inside each modal */
+.modal-body {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+/* ── VEHICLE CARDS (Dealership + Garage) ──────────────────────
+   Each car is displayed as a horizontal card with:
+   emoji | name + description + rarity badge | price + buy button */
+.vehicle-card {
+  background: #f9fbe7;
+  border: 2px solid #dcedc8;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  transition: border-color 0.2s;
+}
+
+/* Owned cars get a green tint */
+.vehicle-card.vehicle-owned {
+  background: #f1f8e9;
+  border-color: #a5d6a7;
+}
+
+/* Inner flex row: emoji | info | action */
+.vehicle-card-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* The big car emoji on the left */
+.vehicle-emoji {
+  font-size: 2.2rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Name, description, rarity badge — takes up all remaining width */
+.vehicle-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.vehicle-name {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #1a2e1a;
+}
+
+.vehicle-desc {
+  font-size: 0.78rem;
+  color: #757575;
+  line-height: 1.3;
+}
+
+/* Price + buy button column on the right */
+.vehicle-action {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 90px;
+}
+
+.vehicle-price {
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.9rem;
+  color: #2e7d32;
+  font-weight: 800;
+}
+
+/* ✅ Owned badge shown in place of the buy button */
+.vehicle-owned-badge {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #388e3c;
+  background: #e8f5e9;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  border: 1px solid #a5d6a7;
+  white-space: nowrap;
+}
+
+/* ── RARITY BADGES ────────────────────────────────────────────
+   Coloured pill badge on each vehicle card.
+   Common=grey, Uncommon=green, Rare=blue, Elite=purple, Legendary=gold */
+.rarity-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 20px;
+  color: #fff;
+  width: fit-content;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.rarity-common    { background: #9e9e9e; }   /* grey   */
+.rarity-uncommon  { background: #43a047; }   /* green  */
+.rarity-rare      { background: #1976d2; }   /* blue   */
+.rarity-elite     { background: #7b1fa2; }   /* purple */
+.rarity-legendary { background: linear-gradient(135deg, #f57f17, #ffd700); color: #5d4037; }  /* gold */
+
+/* Empty garage message */
+.garage-empty {
+  text-align: center;
+  color: #9e9e9e;
+  font-size: 0.95rem;
+  padding: 2rem 1rem;
+  line-height: 1.6;
+}
+
+/* ── HOME DISPLAY ─────────────────────────────────────────────
+   The big emoji + tier name + description shown in My Home modal. */
+.home-display {
+  text-align: center;
+  padding: 1.5rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* The large home emoji — centre piece of the home modal */
+.home-emoji {
+  font-size: 4rem;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.home-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.5rem;
+  color: #1b5e20;
+}
+
+.home-desc {
+  font-size: 0.88rem;
+  color: #555;
+  max-width: 340px;
+  line-height: 1.5;
+}
+
+/* "Tier X / 5" label below the description */
+.home-tier-label {
+  font-size: 0.75rem;
+  color: #9e9e9e;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+/* ── CHANGELOG MODAL ──────────────────────────────────────────
+   Slightly wider than the default modal so the bullet list
+   doesn't feel cramped.                                       */
+.modal-changelog {
+  max-width: 680px;
+}
+
+/* "by Flaco's Video Game Studio" subtitle */
+.changelog-subtitle {
+  font-style: italic;
+  color: #9e9e9e;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* The feature bullet list */
+.changelog-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.changelog-list li {
+  background: #f9fbe7;
+  border: 1px solid #dcedc8;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+.changelog-list li strong {
+  color: #1b5e20;
+}
+
+/* The big "Let's Get Rich! 💰" close button at the bottom */
+.btn-changelog-close {
+  background: linear-gradient(135deg, #ffd700, #f9a825);
+  color: #5d4037;
+  border: none;
+  border-radius: 14px;
+  padding: 0.8rem 2rem;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.15rem;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 0.5rem;
+  transition: filter 0.15s, transform 0.1s;
+  box-shadow: 0 4px 16px rgba(255, 215, 0, 0.4);
+}
+
+.btn-changelog-close:hover  { filter: brightness(1.08); }
+.btn-changelog-close:active { transform: scale(0.97); }

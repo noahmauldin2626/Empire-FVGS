@@ -1,0 +1,9 @@
+# Visual Studio workspace files
+.vs/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Local environment / secrets (never commit these)
+*.env
