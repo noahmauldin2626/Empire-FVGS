@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 // EMPIRE — yachts.js
-// UPDATE 5: Yacht Empire
+// UPDATE 4: Yacht Empire
 //
 // TWO CONNECTED SYSTEMS:
 //   System A — Yacht Empire Business (single upgradeable business,

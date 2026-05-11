@@ -136,7 +136,7 @@ const DIALOGUE_TRIGGERS = {
     "Bill Naire is all that stands between you and the crown. One final push, {pronoun}. ONE FINAL PUSH."
   ],
 
-  // ── SUPER-TIER RANK MILESTONES (Update 5) ─────────────────
+  // ── SUPER-TIER RANK MILESTONES (Update 4) ─────────────────
   "rank_-1": [
     "BILL NAIRE IS DETHRONED! But wait... there are people ABOVE him?!",
     "Sir Spendsalot is looking down at you, {pronoun}. LOOKING DOWN. That ends TODAY.",
@@ -171,7 +171,7 @@ const DIALOGUE_TRIGGERS = {
     "EMPIRE. You built one. Uncle Funds has NEVER been more proud. Check your win screen!"
   ],
 
-  // ── CHAPTER 5: YACHT FLEET (Update 5) ────────────────────
+  // ── CHAPTER 5: YACHT FLEET (Update 4) ────────────────────
   ch5_unlock: [
     "ONE HUNDRED MILLION DOLLARS. {pronoun}. I need to sit down. I AM SITTING DOWN.",
     "The Yacht Fleet is NOW OPEN. Look at the bottom panel. LOOK AT IT.",

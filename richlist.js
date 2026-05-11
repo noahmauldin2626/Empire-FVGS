@@ -6,7 +6,7 @@
 
 // The World Rich List — sorted from lowest to highest net worth.
 // The player starts unranked and climbs by growing their net worth.
-// UPDATE 5: Expanded from 10 to 15 entries. Five new Super-Tier rivals
+// UPDATE 4: Expanded from 10 to 15 entries. Five new Super-Tier rivals
 // (negative ranks) sit above Bill Naire. Win condition = beat THE MONEY GHOST.
 const RICH_LIST = [
   { rank: 10, name: "Penny Pincher",       netWorth: 50000,           emoji: "😤" },
@@ -19,7 +19,7 @@ const RICH_LIST = [
   { rank: 3,  name: "Jeff Beezos",         netWorth: 30000000,        emoji: "😨" },
   { rank: 2,  name: "Elon Muskrat",        netWorth: 75000000,        emoji: "😱" },
   { rank: 1,  name: "Bill Naire",          netWorth: 200000000,       emoji: "🏆" },
-  // ── Super-Tier rivals (Update 5) — negative ranks display as S1–S5 ──
+  // ── Super-Tier rivals (Update 4) — negative ranks display as S1–S5 ──
   { rank: -1, name: "Sir Spendsalot",       netWorth: 500000000,      emoji: "🎩" },
   { rank: -2, name: "Goldie Vaultsworth",   netWorth: 1000000000,     emoji: "💰" },
   { rank: -3, name: "The Yacht Lord",       netWorth: 2500000000,     emoji: "🚤" },
@@ -72,7 +72,7 @@ function renderRichList() {
   let html = `<div class="richlist-title">🌍 World Rich List</div>`;
 
   // Show all NPC entries, highlighting which ones the player has beaten.
-  // Update 5: negative-rank entries (Super-Tier) display as "S1", "S2", etc.
+  // Update 4: negative-rank entries (Super-Tier) display as "S1", "S2", etc.
   [...RICH_LIST].reverse().forEach(entry => {
     const beaten = playerNetWorth > entry.netWorth;
     const isNext = !beaten && getNextTarget(playerNetWorth) &&

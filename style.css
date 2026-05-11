@@ -612,7 +612,7 @@ h1, h2, h3, .panel-title {
 /* ── BOTTOM PANEL ─────────────────────────────────────────── */
 #bottom-panel {
   display: grid;
-  grid-template-columns: 1fr 320px 280px; /* Update 5: was 1fr 280px — added yacht fleet column */
+  grid-template-columns: 1fr 320px 280px; /* Update 4: was 1fr 280px — added yacht fleet column */
   gap: 0.8rem;
   padding: 0 0.8rem 0.8rem;
 }
@@ -1316,7 +1316,7 @@ h1, h2, h3, .panel-title {
 .btn-changelog-close:active { transform: scale(0.97); }
 
 /* ══════════════════════════════════════════════════════════════
-   UPDATE 5 STYLES — Yacht Empire
+   UPDATE 4 STYLES — Yacht Empire
    New styles for: yacht fleet tier badges, locked yacht cards,
    super-tier rich list entries.
    ══════════════════════════════════════════════════════════════ */
