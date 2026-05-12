@@ -889,15 +889,21 @@ async function handleUsernameSubmit() {
       // Correct — fall through to proceed
 
     } else if (loginHasSave && !loginSavedPw) {
-      // Scenario B — returning player, no password yet: optionally save one
-      if (enteredPw) {
-        await savePassword(clean, enteredPw);
-        showToast("Password set! Your account is now protected.");
+      // Scenario B — returning player, no password yet: require one now
+      if (!enteredPw) {
+        showUsernameError("Please set a password to protect your account.");
+        return;
       }
+      await savePassword(clean, enteredPw);
+      showToast("Password set! Your account is now protected.");
 
     } else {
-      // Scenario A — new player: optionally save a password
-      if (enteredPw) await savePassword(clean, enteredPw);
+      // Scenario A — new player: require a password before entering
+      if (!enteredPw) {
+        showUsernameError("Please choose a password to protect your account.");
+        return;
+      }
+      await savePassword(clean, enteredPw);
     }
 
     // All three scenarios: done validating — enter the game
@@ -934,12 +940,12 @@ async function handleUsernameSubmit() {
     if (pwHint)  pwHint.textContent  = "Your account is password protected.";
   } else if (hasSave && !savedPw) {
     // Scenario B — returning player, no password on file
-    if (pwLabel) pwLabel.textContent = "Set a password (optional):";
-    if (pwHint)  pwHint.textContent  = "Add a password to protect your save. Leave blank to skip.";
+    if (pwLabel) pwLabel.textContent = "Set a password (required):";
+    if (pwHint)  pwHint.textContent  = "Your account needs a password. Choose one to continue.";
   } else {
     // Scenario A — new player
-    if (pwLabel) pwLabel.textContent = "Set a password (optional):";
-    if (pwHint)  pwHint.textContent  = "Protects your save from others. Leave blank to skip.";
+    if (pwLabel) pwLabel.textContent = "Set a password (required):";
+    if (pwHint)  pwHint.textContent  = "Choose a password to protect your save.";
   }
 
   if (pwWrap) pwWrap.style.display = "block";
