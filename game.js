@@ -140,7 +140,7 @@ const gameState = {
 let powerClickActive   = false; // true while the key is held and firing
 let powerClickCooldown = false; // true during the 3-sec cooldown
 let powerClickInterval = null;  // the setInterval handle for rapid clicks
-let powerClickTimeout  = null;  // the setTimeout handle for the 15-sec limit
+let powerClickTimeout  = null;  // the setTimeout handle for the 10-sec limit
 let powerClickCoolTimer = null; // the setTimeout handle for cooldown expiry
 
 // ── FORMATTING ─────────────────────────────────────────────────
@@ -638,10 +638,10 @@ function startPowerClick() {
     }
   }, 100);
 
-  // Auto-stop after 15 seconds
+  // Auto-stop after 10 seconds
   powerClickTimeout = setTimeout(function () {
     stopPowerClick(true);
-  }, 15000);
+  }, 10000);
 }
 
 function stopPowerClick(triggerCooldown) {
