@@ -33,7 +33,7 @@
 // Update this string each time you ship a new update.
 // The changelog modal auto-shows once when this doesn't match
 // what's stored in gameState.lastSeenChangelog.
-const CHANGELOG_VERSION = "5_6";
+const CHANGELOG_VERSION = "5_6_2";
 
 // ── ACTIVE USERNAME ────────────────────────────────────────────
 // Holds the name the player typed on the username screen.
@@ -80,7 +80,8 @@ const gameState = {
   cryptoPrices: {},      // { coinId: currentPrice }     changes over time
 
   // --- Airline Fleet (Update 5.6) ---
-  ownedAirlines: {},     // { assetId: tierNumber }
+  ownedAirlines: {},       // { assetId: tierNumber }
+  airlineFleetUnlocked: false, // true once $50M net worth reached (Update 5.6.2)
 
   // --- Sector Managers (Update 5.6) ---
   // { managerId: level }  e.g. { real_estate: 2, market: 1 }
@@ -291,8 +292,9 @@ function fillMissingFields() {
   if (!gameState.coinSpent)  gameState.coinSpent  = {};
 
   // --- Fields added in Update 5.6 ---
-  if (!gameState.ownedAirlines)  gameState.ownedAirlines  = {};
-  if (!gameState.sectorManagers) gameState.sectorManagers = {};
+  if (!gameState.ownedAirlines)                    gameState.ownedAirlines        = {};
+  if (!gameState.sectorManagers)                   gameState.sectorManagers       = {};
+  if (gameState.airlineFleetUnlocked === undefined) gameState.airlineFleetUnlocked = false;
 
   // Update 5.5 guard — seeds prices for any NEW coins added to CRYPTOS
   // that are missing from an existing save's cryptoPrices object.
@@ -441,8 +443,9 @@ function playAgain() {
     coinSpent:  {},
 
     // Update 5.6 keys:
-    ownedAirlines:  {},
-    sectorManagers: {}
+    ownedAirlines:        {},
+    sectorManagers:       {},
+    airlineFleetUnlocked: false
   });
 
   document.getElementById("win-screen").style.display   = "none";
@@ -520,6 +523,14 @@ function checkChapterUnlocks() {
   if (gameState.chapter < 3 && gameState.netWorth   >= 10000)      unlockChapter(3);
   if (gameState.chapter < 4 && gameState.netWorth   >= 25000)      unlockChapter(4);
   if (gameState.chapter < 5 && gameState.netWorth   >= 100000000)  unlockChapter(5); // Update 4: $100M
+
+  // Update 5.6.2: Airline Fleet unlocks independently at $50M (before Yacht Fleet at $100M)
+  if (!gameState.airlineFleetUnlocked && gameState.netWorth >= 50000000) {
+    gameState.airlineFleetUnlocked = true;
+    saveGame();
+    const airlineEl = document.getElementById("airline-fleet-section");
+    if (airlineEl) { airlineEl.classList.remove("panel-locked"); renderAirlineFleet(); }
+  }
 }
 
 function unlockChapter(chapterNum) {
@@ -559,9 +570,7 @@ function unlockChapter(chapterNum) {
   if (chapterNum === 5) {
     const yachtEl = document.getElementById("yacht-fleet-section");
     if (yachtEl) { yachtEl.classList.remove("panel-locked"); renderYachtFleet(); }
-    // Update 5.6: unlock airline fleet panel too
-    const airlineEl = document.getElementById("airline-fleet-section");
-    if (airlineEl) { airlineEl.classList.remove("panel-locked"); renderAirlineFleet(); }
+    // Note: Airline Fleet has its own $50M unlock via checkChapterUnlocks() — not here
     triggerDialogue("ch5_unlock");
   }
 }
@@ -729,10 +738,8 @@ function updateUI() {
   if (gameState.chapter >= 2) renderStocks();
   if (gameState.chapter >= 2) renderCrypto();   // Update 3: crypto lives alongside stocks
   if (gameState.chapter >= 3) renderBusinesses(); // also calls renderYachtBusiness() at end
-  if (gameState.chapter >= 5) {
-    renderYachtFleet();    // Update 4: yacht fleet panel
-    renderAirlineFleet();  // Update 5.6: airline fleet panel
-  }
+  if (gameState.chapter >= 5)           renderYachtFleet();          // Update 4
+  if (gameState.airlineFleetUnlocked)   renderAirlineFleet();         // Update 5.6.2: $50M unlock
 
   // Update 3: Manager is always visible from game start — render it every tick
   renderManager();
@@ -1104,10 +1111,10 @@ function startGame() {
     }
   }
 
-  // ── Airline Fleet panel (Update 5.6, Chapter 5) ────────────
+  // ── Airline Fleet panel (Update 5.6.2: unlocks at $50M independently) ──
   const airlinePanel = document.getElementById("airline-fleet-section");
   if (airlinePanel) {
-    if (gameState.chapter < 5) {
+    if (!gameState.airlineFleetUnlocked) {
       airlinePanel.classList.add("panel-locked");
     } else {
       airlinePanel.classList.remove("panel-locked");
