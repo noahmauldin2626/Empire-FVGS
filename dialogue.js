@@ -57,6 +57,24 @@ const DIALOGUE_TRIGGERS = {
     "Prices go up AND down every few seconds. The market never sleeps. Neither does Uncle Funds, but that's unrelated."
   ],
 
+  // Fires automatically after ch2_unlock — introduces the Crypto tab (Update 5.1)
+  crypto_intro: [
+    "Oh! Before I forget — you see those TWO tabs on the right panel?",
+    "STOCKS on the left. That's what we just talked about. Nice and boring. RELIABLE.",
+    "CRYPTO on the right. That is a COMPLETELY different animal. A feral one.",
+    "Crypto prices move MORE. Much more. Up to TEN TIMES the base price on a good day.",
+    "On a BAD day... it can lose ninety percent of its value. While you're watching. Crying.",
+    "But here's the thing, {pronoun} — the DIVIDENDS still pay out no matter what the price does.",
+    "High risk. High reward. Classic Uncle Funds approved investment strategy.",
+    "Click the Crypto tab. Take a peek. Just... maybe don't put EVERYTHING in there. Maybe."
+  ],
+
+  first_crypto: [
+    "YOUR FIRST CRYPTO COIN! Uncle Funds is equal parts proud and terrified.",
+    "Keep an eye on that price ticker. When it moons — and it WILL moon — you SELL.",
+    "Or hold forever and pray. That's also a valid strategy apparently."
+  ],
+
   // ── CHAPTER 3: BUSINESSES ─────────────────────────────────
   ch3_unlock: [
     "TEN THOUSAND DOLLARS net worth! Do you know how many sandwiches that is?! DON'T BUY SANDWICHES.",
@@ -204,6 +222,13 @@ const DIALOGUE_TRIGGERS = {
 
   tip_upgrade_reminder: [
     "Don't forget to UPGRADE your properties and businesses! Tier 3 is where the REAL money lives!"
+  ],
+
+  // ── UPDATE 5.1: HYPERCAR REACTION ─────────────────────────
+  first_hypercar: [
+    "A HYPERCAR. You just spent MILLIONS on a car that cannot legally use its top speed ANYWHERE.",
+    "That is the most unhinged thing you have ever done. Uncle Funds has NEVER been more proud.",
+    "The road isn't ready for you, {pronoun}. The road is not WORTHY of you."
   ]
 
 };

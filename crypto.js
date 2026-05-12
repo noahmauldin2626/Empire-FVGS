@@ -163,6 +163,12 @@ function buyCoins(coinId, amount) {
   renderCrypto();
   updateUI();
 
+  // Update 5.1: first crypto purchase triggers Uncle Funds dialogue
+  if (!gameState.hasSeenFirstCrypto) {
+    gameState.hasSeenFirstCrypto = true;
+    triggerDialogue("first_crypto");
+  }
+
   return true;
 }
 

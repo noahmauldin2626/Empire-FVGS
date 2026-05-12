@@ -20,15 +20,18 @@
 
 // ── CAR DATA ─────────────────────────────────────────────────
 
-// The 5 purchasable vehicles, ordered cheapest to most expensive.
+// All purchasable vehicles — 5 originals + 15 new in Update 5.1.
+// Each car has a 'category' field for the dealership filter tabs.
 const VEHICLES = [
+  // ── ORIGINAL 5 (Update 3) ───────────────────────────────────
   {
     id: "civic",
     name: "2003 Honda Civic",
     emoji: "🚗",
     description: "It runs. Most of the time. The AC is a suggestion.",
     price: 3000,
-    rarity: "Common"
+    rarity: "Common",
+    category: "Starter"
   },
   {
     id: "mustang",
@@ -36,7 +39,8 @@ const VEHICLES = [
     emoji: "🐎",
     description: "Loud, proud, and parks diagonally at every opportunity.",
     price: 35000,
-    rarity: "Uncommon"
+    rarity: "Uncommon",
+    category: "Starter"
   },
   {
     id: "bmw_m3",
@@ -44,7 +48,8 @@ const VEHICLES = [
     emoji: "🏎️",
     description: "For when you need everyone at the coffee shop to know.",
     price: 85000,
-    rarity: "Rare"
+    rarity: "Rare",
+    category: "Sport"
   },
   {
     id: "rolls",
@@ -52,7 +57,8 @@ const VEHICLES = [
     emoji: "👻🚘",
     description: "You don't drive it. It glides. On air. On money.",
     price: 350000,
-    rarity: "Elite"
+    rarity: "Elite",
+    category: "Luxury"
   },
   {
     id: "lambo",
@@ -60,19 +66,175 @@ const VEHICLES = [
     emoji: "🟡🏎️",
     description: "You bought it. Uncle Funds fainted. Worth it.",
     price: 750000,
-    rarity: "Legendary"
+    rarity: "Legendary",
+    category: "Super"
+  },
+
+  // ── UPDATE 5.1: 3 NEW STARTER CARS ─────────────────────────
+  {
+    id: "beater_truck",
+    name: "1998 Ford F-150",
+    emoji: "🛻",
+    description: "Three dents, zero regrets. That bumper sticker is load-bearing.",
+    price: 1500,
+    rarity: "Common",
+    category: "Starter"
+  },
+  {
+    id: "moped",
+    name: "Razor Moped Pro",
+    emoji: "🛵",
+    description: "Technically motorized. Technically a vehicle. Technically yours.",
+    price: 800,
+    rarity: "Common",
+    category: "Starter"
+  },
+  {
+    id: "minivan",
+    name: "2009 Dodge Grand Caravan",
+    emoji: "🚐",
+    description: "Seven seats. None of them comfortable. All of them sticky.",
+    price: 4500,
+    rarity: "Uncommon",
+    category: "Starter"
+  },
+
+  // ── UPDATE 5.1: 3 NEW SPORT CARS ───────────────────────────
+  {
+    id: "corvette",
+    name: "Chevrolet Corvette Z06",
+    emoji: "🏎️",
+    description: "American muscle with a midlife crisis baked in. Glorious.",
+    price: 120000,
+    rarity: "Sport",
+    category: "Sport"
+  },
+  {
+    id: "porsche_911",
+    name: "Porsche 911 Turbo S",
+    emoji: "🚗",
+    description: "Engineered by people who consider fun a scientific principle.",
+    price: 220000,
+    rarity: "Sport",
+    category: "Sport"
+  },
+  {
+    id: "ferrari_roma",
+    name: "Ferrari Roma",
+    emoji: "🏎️",
+    description: "Italy decided to bottle passion and sell it for $200K. You bought it.",
+    price: 280000,
+    rarity: "Sport",
+    category: "Sport"
+  },
+
+  // ── UPDATE 5.1: 3 NEW LUXURY CARS ──────────────────────────
+  {
+    id: "bentley",
+    name: "Bentley Continental GT",
+    emoji: "🚙",
+    description: "Hand-stitched leather. Hand-buffed walnut. Hand-delivered shame at nothing.",
+    price: 600000,
+    rarity: "Elite",
+    category: "Luxury"
+  },
+  {
+    id: "maybach",
+    name: "Mercedes-Maybach S680",
+    emoji: "🚗",
+    description: "The back seat reclines fully flat. Your accountant sits up front.",
+    price: 850000,
+    rarity: "Elite",
+    category: "Luxury"
+  },
+  {
+    id: "aston_dbs",
+    name: "Aston Martin DBS",
+    emoji: "🚘",
+    description: "James Bond drives one. You drive one now. No missions required.",
+    price: 750000,
+    rarity: "Elite",
+    category: "Luxury"
+  },
+
+  // ── UPDATE 5.1: 3 NEW SUPER CARS ───────────────────────────
+  {
+    id: "mclaren_720",
+    name: "McLaren 720S",
+    emoji: "🏎️",
+    description: "720 horsepower. 0 to 60 in 2.9 seconds. 100% worth it.",
+    price: 2000000,
+    rarity: "Super",
+    category: "Super"
+  },
+  {
+    id: "bugatti_chiron",
+    name: "Bugatti Chiron",
+    emoji: "🏎️",
+    description: "1,479 horsepower. Top speed: yes. Price: also yes.",
+    price: 4500000,
+    rarity: "Super",
+    category: "Super"
+  },
+  {
+    id: "pagani_huayra",
+    name: "Pagani Huayra",
+    emoji: "🏎️",
+    description: "Handmade in Italy by people who believe cars are art. They are right.",
+    price: 3500000,
+    rarity: "Super",
+    category: "Super"
+  },
+
+  // ── UPDATE 5.1: 3 NEW HYPERCARS ────────────────────────────
+  {
+    id: "rimac_nevera",
+    name: "Rimac Nevera",
+    emoji: "⚡🏎️",
+    description: "Electric. 1,914 hp. It will beat anything on the planet. Silently.",
+    price: 12000000,
+    rarity: "Hypercar",
+    category: "Hypercar"
+  },
+  {
+    id: "koenigsegg_jesko",
+    name: "Koenigsegg Jesko Absolut",
+    emoji: "🏎️",
+    description: "Top speed: 330 mph. Roads fast enough for it: 0. Worth it: yes.",
+    price: 20000000,
+    rarity: "Hypercar",
+    category: "Hypercar"
+  },
+  {
+    id: "ssc_tuatara",
+    name: "SSC Tuatara",
+    emoji: "🏎️",
+    description: "The fastest production car on Earth. Uncle Funds just fainted again.",
+    price: 18000000,
+    rarity: "Hypercar",
+    category: "Hypercar"
   }
 ];
 
 // Maps each rarity name to a CSS class for the coloured rarity badge.
 // Common=grey, Uncommon=green, Rare=blue, Elite=purple, Legendary=gold
+// Update 5.1: Sport=bold blue, Super=deep purple, Hypercar=animated gradient
 const RARITY_CLASS = {
   "Common":    "rarity-common",
   "Uncommon":  "rarity-uncommon",
   "Rare":      "rarity-rare",
   "Elite":     "rarity-elite",
-  "Legendary": "rarity-legendary"
+  "Legendary": "rarity-legendary",
+  // New in Update 5.1:
+  "Sport":     "rarity-sport",
+  "Super":     "rarity-super",
+  "Hypercar":  "rarity-hypercar"
 };
+
+// ── DEALERSHIP FILTER STATE ───────────────────────────────────
+// Tracks the active category tab in the Dealership modal.
+// "All" shows every car; other values filter by car.category.
+let dealershipFilter = "All";
 
 // ── HOME DATA ─────────────────────────────────────────────────
 
@@ -134,9 +296,26 @@ function buyCar(carId) {
   updateUI();
 
   showToast(`${car.emoji} ${car.name} added to your garage!`);
+
+  // Update 5.1: first Hypercar triggers Uncle Funds dialogue
+  if (car.rarity === "Hypercar" && !gameState.hasSeenFirstHypercar) {
+    gameState.hasSeenFirstHypercar = true;
+    triggerDialogue("first_hypercar");
+  }
 }
 
-// Renders all 5 car cards inside the Dealership modal.
+// Updates the active tab highlight and re-renders the dealership list.
+// Called by the tab buttons in the dealership modal (index.html).
+function setDealerFilter(category) {
+  dealershipFilter = category;
+  // Update active tab style
+  document.querySelectorAll(".dealer-tab").forEach(btn => {
+    btn.classList.toggle("dealer-tab-active", btn.textContent.trim() === category);
+  });
+  renderDealership();
+}
+
+// Renders car cards inside the Dealership modal, filtered by dealershipFilter.
 // Shows "✅ Owned" badge for already-purchased cars.
 // Disables the Buy button when the player can't afford it.
 function renderDealership() {
@@ -145,7 +324,12 @@ function renderDealership() {
 
   container.innerHTML = ""; // wipe and rebuild
 
-  VEHICLES.forEach(car => {
+  // Filter by active category (show all if "All" is selected)
+  const filtered = dealershipFilter === "All"
+    ? VEHICLES
+    : VEHICLES.filter(v => v.category === dealershipFilter);
+
+  filtered.forEach(car => {
     const owned       = gameState.ownedCars && gameState.ownedCars.includes(car.id);
     const canAfford   = gameState.cash >= car.price;
     const rarityClass = RARITY_CLASS[car.rarity] || "rarity-common";

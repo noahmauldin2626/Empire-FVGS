@@ -33,7 +33,7 @@
 // Update this string each time you ship a new update.
 // The changelog modal auto-shows once when this doesn't match
 // what's stored in gameState.lastSeenChangelog.
-const CHANGELOG_VERSION = "4";
+const CHANGELOG_VERSION = "update_5_1";
 
 // ── ACTIVE USERNAME ────────────────────────────────────────────
 // Holds the name the player typed on the username screen.
@@ -73,10 +73,18 @@ const gameState = {
   yachtBusinessLevel: 0, // 0 = not purchased, 1–4 = current level
   ownedYachts:        {}, // { yachtId: tierNumber }     e.g. { sea_biscuit: 2 }
 
-  // --- One-time tutorial flags (Update 3.5) ---
+  // --- One-time tutorial flags (Update 3.5 / 5.1) ---
   // Using a saved flag instead of a share-count check means selling all
   // stocks and re-buying will never replay the first-stock tutorial.
-  hasSeenFirstStock: false,
+  hasSeenFirstStock:   false,
+  hasSeenFirstCrypto:  false, // Update 5.1: first crypto coin tutorial
+  hasSeenFirstHypercar: false, // Update 5.1: first hypercar reaction
+
+  // --- Audio volume settings (Update 5.1) ---
+  // Placeholder values — audio system coming in a future update.
+  volume_master: 80,   // master volume 0-100
+  volume_click:  100,  // click sound volume 0-100
+  volume_music:  60,   // music volume 0-100
 
   // --- Vanity Purchases (Update 3 — do NOT affect net worth or income) ---
   ownedCars: [],         // array of car id strings      e.g. ["civic", "mustang"]
@@ -99,6 +107,15 @@ const gameState = {
   // --- Changelog (Update 3) ---
   lastSeenChangelog: "",  // set to CHANGELOG_VERSION after the player sees the modal
 };
+
+// ── POWER CLICK STATE ──────────────────────────────────────────
+// Tracks whether Power Click is currently active or cooling down.
+// Hold Enter or Space to activate — fires clicks automatically for 15s.
+let powerClickActive   = false; // true while the key is held and firing
+let powerClickCooldown = false; // true during the 3-sec cooldown
+let powerClickInterval = null;  // the setInterval handle for rapid clicks
+let powerClickTimeout  = null;  // the setTimeout handle for the 15-sec limit
+let powerClickCoolTimer = null; // the setTimeout handle for cooldown expiry
 
 // ── FORMATTING ─────────────────────────────────────────────────
 
@@ -235,6 +252,13 @@ function fillMissingFields() {
   // --- Fields added in Update 4 ---
   if (gameState.yachtBusinessLevel === undefined) gameState.yachtBusinessLevel = 0;
   if (gameState.ownedYachts        === undefined) gameState.ownedYachts        = {};
+
+  // --- Fields added in Update 5.1 ---
+  if (gameState.hasSeenFirstCrypto   === undefined) gameState.hasSeenFirstCrypto   = false;
+  if (gameState.hasSeenFirstHypercar === undefined) gameState.hasSeenFirstHypercar = false;
+  if (gameState.volume_master        === undefined) gameState.volume_master        = 80;
+  if (gameState.volume_click         === undefined) gameState.volume_click         = 100;
+  if (gameState.volume_music         === undefined) gameState.volume_music         = 60;
 }
 
 // ── LOAD GAME ──────────────────────────────────────────────────
@@ -359,7 +383,11 @@ function playAgain() {
 
     // Update 4 keys:
     yachtBusinessLevel: 0,
-    ownedYachts: {}
+    ownedYachts: {},
+
+    // Update 5.1 keys: reset tutorial flags; keep volume settings
+    hasSeenFirstCrypto:   false,
+    hasSeenFirstHypercar: false
   });
 
   document.getElementById("win-screen").style.display   = "none";
@@ -441,6 +469,9 @@ function unlockChapter(chapterNum) {
       renderCrypto(); // Update 3: render crypto tab content too
     }
     triggerDialogue("ch2_unlock");
+    // Update 5.1: crypto intro queues right after ch2_unlock dialogue.
+    // The dialogue engine appends these lines to the end of the current queue.
+    triggerDialogue("crypto_intro");
   }
 
   if (chapterNum === 3) {
@@ -513,6 +544,66 @@ function handleMoneyClick(event) {
   if (btn) {
     btn.classList.add("btn-pulse");
     setTimeout(() => btn.classList.remove("btn-pulse"), 150);
+  }
+}
+
+// ── POWER CLICK ─────────────────────────────────────────────────
+// Hold Enter or Space to fire 10 clicks/sec for up to 15 seconds,
+// then a 3-second cooldown. Releasing early also starts the cooldown.
+// All clicks go through handleMoneyClick() so stats are correctly tracked.
+
+function startPowerClick() {
+  if (powerClickActive || powerClickCooldown || gameState.chapter === 0) return;
+  powerClickActive = true;
+  updatePowerClickUI();
+
+  powerClickInterval = setInterval(function () {
+    const btn = document.getElementById("money-btn");
+    if (btn) {
+      const rect      = btn.getBoundingClientRect();
+      const fakeEvent = {
+        clientX: rect.left + rect.width  / 2,
+        clientY: rect.top  + rect.height / 2
+      };
+      handleMoneyClick(fakeEvent);
+    }
+  }, 100);
+
+  // Auto-stop after 15 seconds
+  powerClickTimeout = setTimeout(function () {
+    stopPowerClick(true);
+  }, 15000);
+}
+
+function stopPowerClick(triggerCooldown) {
+  if (!powerClickActive) return;
+  powerClickActive = false;
+  clearInterval(powerClickInterval);
+  clearTimeout(powerClickTimeout);
+  powerClickInterval = null;
+  powerClickTimeout  = null;
+
+  // Always enter a 3-second cooldown after stopping (whether 15s expired or key released)
+  powerClickCooldown = true;
+  updatePowerClickUI();
+  powerClickCoolTimer = setTimeout(function () {
+    powerClickCooldown = false;
+    updatePowerClickUI();
+  }, 3000);
+}
+
+function updatePowerClickUI() {
+  const indicator = document.getElementById("power-click-indicator");
+  if (!indicator) return;
+  if (powerClickActive) {
+    indicator.textContent = "⚡ POWER CLICK ACTIVE";
+    indicator.className   = "power-click-indicator power-click-on";
+  } else if (powerClickCooldown) {
+    indicator.textContent = "❄️ POWER CLICK COOLING DOWN...";
+    indicator.className   = "power-click-indicator power-click-cooldown";
+  } else {
+    indicator.textContent = "Hold ENTER or SPACE for Power Click";
+    indicator.className   = "power-click-indicator power-click-ready";
   }
 }
 
@@ -606,6 +697,132 @@ function dismissChangelog() {
   if (modal) modal.style.display = "none";
 }
 
+// ── PASSWORD MANAGEMENT ────────────────────────────────────────
+// Passwords stored as plain text (no hashing — acceptable at this scale).
+// Stored in both Firebase (saves/{username}/password) and localStorage
+// (empire_password_{username}) for offline fallback.
+
+async function savePassword(username, password) {
+  localStorage.setItem("empire_password_" + username, password);
+  if (window.db && username) {
+    try {
+      await window.db.ref("saves/" + username + "/password").set(password);
+    } catch (err) {
+      console.warn("Cloud password save failed:", err.message);
+    }
+  }
+}
+
+async function loadPassword(username) {
+  if (window.db && username) {
+    try {
+      const snap = await window.db.ref("saves/" + username + "/password").get();
+      if (snap.exists() && snap.val()) return snap.val();
+    } catch (err) {
+      console.warn("Cloud password load failed, checking local...", err.message);
+    }
+  }
+  return localStorage.getItem("empire_password_" + username) || null;
+}
+
+async function deletePassword(username) {
+  localStorage.removeItem("empire_password_" + username);
+  if (window.db && username) {
+    try {
+      await window.db.ref("saves/" + username + "/password").remove();
+    } catch (err) {
+      console.warn("Cloud password delete failed:", err.message);
+    }
+  }
+}
+
+async function deleteAccount(username) {
+  localStorage.removeItem("empire_save_v1_" + username);
+  localStorage.removeItem("empire_password_" + username);
+  if (window.db && username) {
+    try {
+      await window.db.ref("saves/" + username).remove();
+    } catch (err) {
+      console.warn("Cloud account delete failed:", err.message);
+    }
+  }
+}
+
+// ── SETTINGS MODAL ─────────────────────────────────────────────
+
+function openSettings() {
+  const display = document.getElementById("settings-username-display");
+  if (display) display.textContent = activeUsername || "Unknown";
+
+  // Restore saved volume slider positions
+  ["master", "click", "music"].forEach(type => {
+    const saved = gameState["volume_" + type];
+    if (saved !== undefined) {
+      const slider = document.getElementById("slider-" + type);
+      const num    = document.getElementById("vol-" + type + "-display");
+      if (slider) slider.value    = saved;
+      if (num)    num.textContent = saved;
+    }
+  });
+
+  const modal = document.getElementById("settings-modal");
+  if (modal) modal.style.display = "flex";
+}
+
+function closeSettings() {
+  const modal = document.getElementById("settings-modal");
+  if (modal) modal.style.display = "none";
+}
+
+// Called by each slider's oninput handler. Saves value immediately.
+// TODO: when audio system launches, apply value to audio engine here.
+function updateVolume(type, value) {
+  const num = document.getElementById("vol-" + type + "-display");
+  if (num) num.textContent = value;
+  gameState["volume_" + type] = parseInt(value, 10);
+  saveToLocal();
+}
+
+async function changePassword() {
+  const input    = document.getElementById("settings-new-password");
+  const feedback = document.getElementById("settings-pw-feedback");
+  if (!input || !activeUsername) return;
+
+  const newPw = input.value.trim();
+  if (!newPw) {
+    await deletePassword(activeUsername);
+    if (feedback) { feedback.textContent = "Password removed. Account is now open."; feedback.style.color = "#388e3c"; }
+  } else {
+    await savePassword(activeUsername, newPw);
+    if (feedback) { feedback.textContent = "Password updated successfully!"; feedback.style.color = "#388e3c"; }
+  }
+  input.value = "";
+  setTimeout(() => { if (feedback) feedback.textContent = ""; }, 3000);
+}
+
+function confirmDeleteAccount() {
+  const confirmed = window.confirm(
+    "DELETE ACCOUNT?\n\n" +
+    "This will permanently erase ALL save data for '" + activeUsername + "'.\n" +
+    "This cannot be undone.\n\n" +
+    "A second confirmation will follow."
+  );
+  if (!confirmed) return;
+
+  const typed = window.prompt("Type your username exactly to confirm: " + activeUsername);
+  if (typed !== activeUsername) {
+    alert("Username did not match. Account NOT deleted.");
+    return;
+  }
+
+  deleteAccount(activeUsername).then(() => {
+    alert("Account deleted. Returning to the start screen.");
+    activeUsername = "";
+    localStorage.removeItem("empire_username");
+    location.reload();
+  });
+}
+
 // ── USERNAME SCREEN ────────────────────────────────────────────
 
 function showUsernameError(message) {
@@ -613,16 +830,22 @@ function showUsernameError(message) {
   if (el) el.textContent = message;
 }
 
+// Handles transition from username screen to intro or game.
+function proceedToGame(hasSave) {
+  if (hasSave && gameState.hasSeenIntro) {
+    startGame();
+  } else {
+    document.getElementById("username-screen").style.display = "none";
+    document.getElementById("intro-screen").style.display    = "flex";
+  }
+}
+
 async function handleUsernameSubmit() {
   const input = document.getElementById("username-input");
   if (!input) return;
 
   const rawName = input.value.trim();
-
-  const clean = rawName
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "")
-    .substring(0, 20);
+  const clean   = rawName.toLowerCase().replace(/[^a-z0-9]/g, "").substring(0, 20);
 
   if (clean.length === 0) {
     showUsernameError("Please enter a name! Even 'player1' works!");
@@ -634,23 +857,62 @@ async function handleUsernameSubmit() {
   }
 
   showUsernameError("");
-  document.getElementById("username-loading").style.display = "block";
-  document.getElementById("username-submit-btn").disabled   = true;
+  const loadingEl = document.getElementById("username-loading");
+  const submitBtn = document.getElementById("username-submit-btn");
+  if (loadingEl) loadingEl.style.display = "block";
+  if (submitBtn) submitBtn.disabled = true;
 
   activeUsername = clean;
   localStorage.setItem("empire_username", clean);
 
   const hasSave = await loadGame();
+  const savedPw = await loadPassword(clean);
 
-  document.getElementById("username-loading").style.display = "none";
-  document.getElementById("username-submit-btn").disabled   = false;
+  if (loadingEl) loadingEl.style.display = "none";
+  if (submitBtn) submitBtn.disabled = false;
 
-  document.getElementById("username-screen").style.display = "none";
+  const passwordInput = document.getElementById("password-input");
+  const pwWrap        = document.getElementById("password-field-wrap");
+  const pwLabel       = document.getElementById("password-label");
+  const pwHint        = document.getElementById("password-hint");
 
-  if (hasSave && gameState.chapter > 0) {
-    startGame();
+  if (hasSave && savedPw) {
+    // Returning player with password — require it
+    if (pwWrap)  pwWrap.style.display   = "block";
+    if (pwLabel) pwLabel.textContent    = "Enter your password:";
+    if (pwHint)  pwHint.textContent     = "Your account is password protected.";
+
+    const enteredPw = passwordInput ? passwordInput.value : "";
+    if (!enteredPw) {
+      showUsernameError("This account has a password. Please enter it below.");
+      return;
+    }
+    if (enteredPw !== savedPw) {
+      showUsernameError("Incorrect password. Try again.");
+      if (passwordInput) { passwordInput.value = ""; passwordInput.focus(); }
+      return;
+    }
+    // Correct — proceed
+    proceedToGame(hasSave);
+
+  } else if (hasSave && !savedPw) {
+    // Returning player without a password — optionally set one now
+    const enteredPw = passwordInput ? passwordInput.value.trim() : "";
+    if (enteredPw) {
+      await savePassword(clean, enteredPw);
+      showToast("Password set! Your account is now protected.");
+    }
+    proceedToGame(hasSave);
+
   } else {
-    document.getElementById("intro-screen").style.display = "flex";
+    // New player — show optional password field, then proceed
+    if (pwWrap)  pwWrap.style.display   = "block";
+    if (pwLabel) pwLabel.textContent    = "Set a password (optional):";
+    if (pwHint)  pwHint.textContent     = "Protects your save from others. Leave blank to skip.";
+
+    const enteredPw = passwordInput ? passwordInput.value.trim() : "";
+    if (enteredPw) await savePassword(clean, enteredPw);
+    proceedToGame(hasSave);
   }
 }
 
@@ -746,6 +1008,9 @@ function startGame() {
   recalculateStats();
   updateUI();
 
+  // Update 5.1: initialise Power Click indicator to "ready" state
+  updatePowerClickUI();
+
   // ── Game loops ───────────────────────────────────────────────
   setInterval(mainGameLoop, 1000);             // main loop: every 1 second
 
@@ -829,6 +1094,42 @@ window.addEventListener("DOMContentLoaded", function () {
     const hint = document.getElementById("username-hint");
     if (hint) hint.textContent = "Welcome back! Press Enter to continue, or type a new name.";
   }
+
+  // Password input — pressing Enter submits the form
+  const passwordInput = document.getElementById("password-input");
+  if (passwordInput) {
+    passwordInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") handleUsernameSubmit();
+    });
+  }
+
+  // ── POWER CLICK KEYBOARD LISTENERS ──────────────────────────
+  // Track held keys to prevent repeat-fire from keydown auto-repeat.
+  const heldKeys = new Set();
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault(); // prevent page scroll from Space
+
+      // Ignore auto-repeat events (held key fires keydown repeatedly)
+      if (heldKeys.has(e.key)) return;
+      heldKeys.add(e.key);
+
+      // Don't activate if typing in an input or textarea
+      if (document.activeElement &&
+          (document.activeElement.tagName === "INPUT" ||
+           document.activeElement.tagName === "TEXTAREA")) return;
+
+      startPowerClick();
+    }
+  });
+
+  document.addEventListener("keyup", function (e) {
+    if (e.key === "Enter" || e.key === " ") {
+      heldKeys.delete(e.key);
+      stopPowerClick(true); // releasing key triggers cooldown
+    }
+  });
 
   // Always start on the username screen
   document.getElementById("username-screen").style.display = "flex";
