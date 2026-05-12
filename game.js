@@ -33,7 +33,7 @@
 // Update this string each time you ship a new update.
 // The changelog modal auto-shows once when this doesn't match
 // what's stored in gameState.lastSeenChangelog.
-const CHANGELOG_VERSION = "update_5_1";
+const CHANGELOG_VERSION = "5_5";
 
 // ── ACTIVE USERNAME ────────────────────────────────────────────
 // Holds the name the player typed on the username screen.
@@ -78,6 +78,14 @@ const gameState = {
   // --- Crypto (Update 3 — Investment: affects net worth and income) ---
   ownedCoins:   {},      // { coinId: coinsOwned }       e.g. { bytecoin: 2 }
   cryptoPrices: {},      // { coinId: currentPrice }     changes over time
+
+  // --- Portfolio Cost Basis (Update 5.5) ---
+  // Tracks total cash spent on each stock/coin across all buy transactions.
+  // Used to calculate profit/loss on the stats display in each card.
+  // Keys are asset IDs (e.g. "pineapple", "bytecoin").
+  // Values are cumulative dollar amounts spent (never decremented on sell).
+  stockSpent: {},        // { stockId: totalCashSpent }
+  coinSpent:  {},        // { coinId:  totalCashSpent }
 
   // --- Yachts (Update 4 — Investment: affects net worth and income) ---
   yachtBusinessLevel: 0, // 0 = not purchased, 1–4 = current level
@@ -269,6 +277,23 @@ function fillMissingFields() {
   if (gameState.volume_master        === undefined) gameState.volume_master        = 80;
   if (gameState.volume_click         === undefined) gameState.volume_click         = 100;
   if (gameState.volume_music         === undefined) gameState.volume_music         = 60;
+
+  // --- Fields added in Update 5.5 ---
+  if (!gameState.stockSpent) gameState.stockSpent = {};
+  if (!gameState.coinSpent)  gameState.coinSpent  = {};
+
+  // Update 5.5 guard — seeds prices for any NEW coins added to CRYPTOS
+  // that are missing from an existing save's cryptoPrices object.
+  // Runs for returning players whose saves pre-date the new coins.
+  if (typeof CRYPTOS !== "undefined") {
+    CRYPTOS.forEach(coin => {
+      if (gameState.cryptoPrices[coin.id] === undefined) {
+        const nudge = 1 + (Math.random() * 0.1 - 0.05);
+        gameState.cryptoPrices[coin.id] =
+          Math.round(coin.basePrice * nudge * 100) / 100;
+      }
+    });
+  }
 }
 
 // ── LOAD GAME ──────────────────────────────────────────────────
@@ -397,7 +422,11 @@ function playAgain() {
 
     // Update 5.1 keys: reset tutorial flags; keep volume settings
     hasSeenFirstCrypto:   false,
-    hasSeenFirstHypercar: false
+    hasSeenFirstHypercar: false,
+
+    // Update 5.5 keys: reset cost basis tracking for new run
+    stockSpent: {},
+    coinSpent:  {}
   });
 
   document.getElementById("win-screen").style.display   = "none";

@@ -1531,3 +1531,48 @@ h1, h2, h3, .panel-title {
   min-height: 1rem;
   text-align: center;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   PORTFOLIO INTELLIGENCE STATS (Update 5.5)
+   Compact 4-row stats grid shown on every owned stock/crypto card.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Container block that holds the 4-row stats grid */
+.portfolio-stats-block {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  margin: 0.35rem 0 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+/* Each row: label on the left, value on the right */
+.portfolio-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+/* Dimmer label text */
+.pstat-label {
+  color: #757575;
+  font-weight: 600;
+}
+
+/* Value text — right-aligned, slightly bolder */
+.pstat-value {
+  color: #212121;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* The outcome row (profit/loss) gets extra visual weight */
+.pstat-outcome {
+  font-size: 0.82rem;
+  font-weight: 900 !important;
+}

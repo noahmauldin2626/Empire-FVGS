@@ -74,6 +74,58 @@ const CRYPTOS = [
     basePrice: 180,
     dividendPerCoin: 0.18,
     volatility: 0.28
+  },
+
+  // ── UPDATE 5.5: NEW COINS ─────────────────────────────────────
+  {
+    id: "vaultcoin",
+    name: "VaultCoin",
+    ticker: "VLT",
+    emoji: "🔒",
+    description: "Backed by a promise, a handshake, and aggressive optimism.",
+    basePrice: 620,
+    dividendPerCoin: 0.62,
+    volatility: 0.20
+  },
+  {
+    id: "lunex",
+    name: "LuneX",
+    ticker: "LNX",
+    emoji: "🌙",
+    description: "They said it would moon. It's trying. It's really trying.",
+    basePrice: 140,
+    dividendPerCoin: 0.14,
+    volatility: 0.32
+  },
+  {
+    id: "pepetoken",
+    name: "PepeToken",
+    ticker: "PEPE",
+    emoji: "🐸",
+    description: "A frog. On a blockchain. Uncle Funds bought 10,000. Don't ask.",
+    basePrice: 8,
+    dividendPerCoin: 0.006,
+    volatility: 0.45
+  },
+  {
+    id: "ironchain",
+    name: "IronChain",
+    ticker: "IRON",
+    emoji: "⛓️",
+    description: "Industrial-grade blockchain for people who mean business.",
+    basePrice: 890,
+    dividendPerCoin: 0.90,
+    volatility: 0.15
+  },
+  {
+    id: "flashcoin",
+    name: "FlashCoin",
+    ticker: "FLSH",
+    emoji: "⚡",
+    description: "Transactions so fast they might have already happened.",
+    basePrice: 310,
+    dividendPerCoin: 0.30,
+    volatility: 0.38
   }
 ];
 
@@ -157,6 +209,9 @@ function buyCoins(coinId, amount) {
 
   gameState.cash -= totalCost;
   gameState.ownedCoins[coinId] = (gameState.ownedCoins[coinId] || 0) + amount;
+
+  // Track cumulative spend for profit/loss calculation (Update 5.5)
+  gameState.coinSpent[coinId] = (gameState.coinSpent[coinId] || 0) + totalCost;
 
   recalculateStats();
   saveGame();
@@ -285,6 +340,23 @@ function switchTab(tab) {
   }
 }
 
+// ── PORTFOLIO STATS ───────────────────────────────────────────
+
+// Returns portfolio intelligence stats for a single crypto coin.
+// Mirrors getStockPortfolioStats() in stocks.js.
+//
+// breakEvenPrice = totalSpent / coinsCurrentlyOwned
+//   = price needed to fully recover all spending if player sells everything now
+function getCoinPortfolioStats(coinId, coinsOwned, currentPrice) {
+  const totalSpent   = gameState.coinSpent[coinId] || 0;
+  const currentValue = coinsOwned * currentPrice;
+  const sellOutcome  = currentValue - totalSpent;
+  const breakEvenPrice = (coinsOwned > 0 && totalSpent > 0)
+    ? totalSpent / coinsOwned
+    : 0;
+  return { totalSpent, currentValue, sellOutcome, breakEvenPrice };
+}
+
 // ── RENDERING ─────────────────────────────────────────────────
 
 // Formats a coin price with exactly 2 decimal places (e.g. $123.45).
@@ -352,16 +424,42 @@ function renderCrypto() {
         <span class="stock-trend">${trendIcon}</span>
       </div>
 
-      <!-- Stats: coins + dividends if owned, or dividend rate if not -->
-      ${coinsOwned > 0 ? `
-        <div class="asset-stats">
-          🪙 <strong>${coinsOwned.toLocaleString()}</strong> coins &nbsp;
-          💰 +${formatMoney(coinsOwned * coin.dividendPerCoin)}/sec
-        </div>
-        <div class="stock-value-row">
-          Portfolio value: <strong>${formatMoney(coinsOwned * currentPrice)}</strong>
-        </div>
-      ` : `
+      <!-- Stats: coins + portfolio intelligence if owned, or dividend rate if not -->
+      ${coinsOwned > 0 ? (() => {
+        const stats         = getCoinPortfolioStats(coin.id, coinsOwned, currentPrice);
+        const outcomePos    = stats.sellOutcome >= 0;
+        const outcomeColor  = outcomePos ? "#2e7d32" : "#c62828";
+        const outcomePrefix = outcomePos ? "+" : "";
+        const outcomeLabel  = outcomePos ? "Profit if sold now" : "Loss if sold now";
+        return `
+          <div class="asset-stats">
+            <span>Coins: <strong>${coinsOwned.toLocaleString()}</strong></span>
+            &nbsp;&nbsp;
+            <span>Div: <strong>+${formatMoney(coinsOwned * coin.dividendPerCoin)}/sec</strong></span>
+          </div>
+          <div class="portfolio-stats-block">
+            <div class="portfolio-stat-row">
+              <span class="pstat-label">Current Value</span>
+              <span class="pstat-value">${formatMoney(stats.currentValue)}</span>
+            </div>
+            <div class="portfolio-stat-row">
+              <span class="pstat-label">Total Spent</span>
+              <span class="pstat-value">${formatMoney(stats.totalSpent)}</span>
+            </div>
+            <div class="portfolio-stat-row">
+              <span class="pstat-label">Break-Even Price</span>
+              <span class="pstat-value">$${stats.breakEvenPrice.toFixed(2)}/coin</span>
+            </div>
+            <div class="portfolio-stat-row">
+              <span class="pstat-label">${outcomeLabel}</span>
+              <span class="pstat-value pstat-outcome"
+                    style="color:${outcomeColor}; font-weight:900;">
+                ${outcomePrefix}${formatMoney(stats.sellOutcome)}
+              </span>
+            </div>
+          </div>
+        `;
+      })() : `
         <div class="asset-stats">
           Dividend: <strong>${formatMoney(coin.dividendPerCoin)}</strong>/coin/sec
         </div>

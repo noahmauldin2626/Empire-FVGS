@@ -175,6 +175,9 @@ function buyStockAmount(stockId, amount) {
   gameState.cash -= totalCost;
   gameState.ownedStocks[stockId] = (gameState.ownedStocks[stockId] || 0) + amount;
 
+  // Track cumulative spend for profit/loss calculation (Update 5.5)
+  gameState.stockSpent[stockId] = (gameState.stockSpent[stockId] || 0) + totalCost;
+
   recalculateStats();
   saveGame();
   renderStocks();
@@ -280,6 +283,27 @@ function sellAllStock(stockId) {
   return true;
 }
 
+// ── PORTFOLIO STATS ───────────────────────────────────────────
+
+// Returns portfolio intelligence stats for a single stock.
+// Called inside renderStocks() for every card that has shares owned.
+//
+// Returns an object with:
+//   totalSpent     — total cash ever spent buying this stock
+//   currentValue   — value of current holdings at current price
+//   sellOutcome    — currentValue - totalSpent (positive = profit, negative = loss)
+//   breakEvenPrice — totalSpent / sharesCurrentlyOwned
+//                    (price needed to recover full spend if player sells everything now)
+function getStockPortfolioStats(stockId, sharesOwned, currentPrice) {
+  const totalSpent   = gameState.stockSpent[stockId] || 0;
+  const currentValue = sharesOwned * currentPrice;
+  const sellOutcome  = currentValue - totalSpent;
+  const breakEvenPrice = (sharesOwned > 0 && totalSpent > 0)
+    ? totalSpent / sharesOwned
+    : 0;
+  return { totalSpent, currentValue, sellOutcome, breakEvenPrice };
+}
+
 // ── RENDERING ─────────────────────────────────────────────────
 
 // Formats a stock price with exactly 2 decimal places (e.g. $52.34).
@@ -340,16 +364,42 @@ function renderStocks() {
         <span class="stock-trend">${trendIcon}</span>
       </div>
 
-      <!-- Stats: shares + dividends if owned, or dividend rate if not -->
-      ${sharesOwned > 0 ? `
-        <div class="asset-stats">
-          📊 <strong>${sharesOwned.toLocaleString()}</strong> shares &nbsp;
-          💰 +${formatMoney(sharesOwned * stock.dividendPerShare)}/sec
-        </div>
-        <div class="stock-value-row">
-          Portfolio value: <strong>${formatMoney(sharesOwned * currentPrice)}</strong>
-        </div>
-      ` : `
+      <!-- Stats: shares + portfolio intelligence if owned, or dividend rate if not -->
+      ${sharesOwned > 0 ? (() => {
+        const stats         = getStockPortfolioStats(stock.id, sharesOwned, currentPrice);
+        const outcomePos    = stats.sellOutcome >= 0;
+        const outcomeColor  = outcomePos ? "#2e7d32" : "#c62828";
+        const outcomePrefix = outcomePos ? "+" : "";
+        const outcomeLabel  = outcomePos ? "Profit if sold now" : "Loss if sold now";
+        return `
+          <div class="asset-stats">
+            <span>Shares: <strong>${sharesOwned.toLocaleString()}</strong></span>
+            &nbsp;&nbsp;
+            <span>Div: <strong>+${formatMoney(sharesOwned * stock.dividendPerShare)}/sec</strong></span>
+          </div>
+          <div class="portfolio-stats-block">
+            <div class="portfolio-stat-row">
+              <span class="pstat-label">Current Value</span>
+              <span class="pstat-value">${formatMoney(stats.currentValue)}</span>
+            </div>
+            <div class="portfolio-stat-row">
+              <span class="pstat-label">Total Spent</span>
+              <span class="pstat-value">${formatMoney(stats.totalSpent)}</span>
+            </div>
+            <div class="portfolio-stat-row">
+              <span class="pstat-label">Break-Even Price</span>
+              <span class="pstat-value">$${stats.breakEvenPrice.toFixed(2)}/share</span>
+            </div>
+            <div class="portfolio-stat-row">
+              <span class="pstat-label">${outcomeLabel}</span>
+              <span class="pstat-value pstat-outcome"
+                    style="color:${outcomeColor}; font-weight:900;">
+                ${outcomePrefix}${formatMoney(stats.sellOutcome)}
+              </span>
+            </div>
+          </div>
+        `;
+      })() : `
         <div class="asset-stats">
           Dividend: <strong>${formatMoney(stock.dividendPerShare)}</strong>/share/sec
         </div>
