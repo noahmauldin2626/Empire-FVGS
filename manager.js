@@ -51,6 +51,81 @@ const MANAGER_LEVELS = [
   }
 ];
 
+// ── SECTOR MANAGERS (Update 5.6) ─────────────────────────────
+// Five specialist managers, one per major income sector.
+// Each boosts their sector's income by a multiplier.
+// 'multiplier' — the income multiplier applied at this level
+//   e.g. 1.25 = 25% bonus, 2.00 = 100% bonus (double income)
+// 'cost' — purchase/upgrade cost for this level
+// 'salary' — fraction of sector's boosted income deducted per second
+const SECTOR_MANAGERS = {
+  real_estate: {
+    id:          "real_estate",
+    name:        "Real Estate Manager",
+    emoji:       "🏢",
+    sector:      "Properties",
+    description: "Manages your entire property portfolio. Has a clipboard and zero chill.",
+    levels: [
+      { level: 1, title: "Junior Agent",       multiplier: 1.25, cost: 50000,    salary: 0.04 },
+      { level: 2, title: "Senior Agent",       multiplier: 1.50, cost: 200000,   salary: 0.07 },
+      { level: 3, title: "Portfolio Director", multiplier: 2.00, cost: 800000,   salary: 0.12 },
+      { level: 4, title: "Property Mogul",     multiplier: 3.00, cost: 3000000,  salary: 0.18 }
+    ]
+  },
+  market: {
+    id:          "market",
+    name:        "Market Manager",
+    emoji:       "📊",
+    sector:      "Stocks & Crypto",
+    description: "Watches all your tickers simultaneously. Never sleeps. Drinks too much coffee.",
+    levels: [
+      { level: 1, title: "Junior Analyst",  multiplier: 1.25, cost: 75000,    salary: 0.04 },
+      { level: 2, title: "Senior Analyst",  multiplier: 1.50, cost: 300000,   salary: 0.07 },
+      { level: 3, title: "Fund Manager",    multiplier: 2.00, cost: 1200000,  salary: 0.12 },
+      { level: 4, title: "Hedge Fund Lord", multiplier: 3.00, cost: 5000000,  salary: 0.18 }
+    ]
+  },
+  business: {
+    id:          "business",
+    name:        "Business Manager",
+    emoji:       "💼",
+    sector:      "Businesses",
+    description: "Oversees all your companies. Wears a different tie every day. Respect.",
+    levels: [
+      { level: 1, title: "Operations Lead",    multiplier: 1.25, cost: 100000,   salary: 0.04 },
+      { level: 2, title: "COO",                multiplier: 1.50, cost: 400000,   salary: 0.07 },
+      { level: 3, title: "CEO",                multiplier: 2.00, cost: 1800000,  salary: 0.12 },
+      { level: 4, title: "Conglomerate Boss",  multiplier: 3.00, cost: 7000000,  salary: 0.18 }
+    ]
+  },
+  airline: {
+    id:          "airline",
+    name:        "Airline Manager",
+    emoji:       "✈️",
+    sector:      "Airline Fleet",
+    description: "Runs your entire aviation empire. Has a pilot's license just in case.",
+    levels: [
+      { level: 1, title: "Operations Coordinator", multiplier: 1.25, cost: 500000,    salary: 0.05 },
+      { level: 2, title: "Fleet Director",          multiplier: 1.50, cost: 2000000,   salary: 0.08 },
+      { level: 3, title: "Aviation VP",             multiplier: 2.00, cost: 8000000,   salary: 0.14 },
+      { level: 4, title: "Sky Overlord",            multiplier: 3.00, cost: 30000000,  salary: 0.20 }
+    ]
+  },
+  yacht: {
+    id:          "yacht",
+    name:        "Yacht Manager",
+    emoji:       "⛵",
+    sector:      "Yacht Fleet",
+    description: "Manages your entire maritime empire from a slightly smaller yacht.",
+    levels: [
+      { level: 1, title: "Harbor Master",      multiplier: 1.25, cost: 400000,    salary: 0.05 },
+      { level: 2, title: "Fleet Captain",      multiplier: 1.50, cost: 1600000,   salary: 0.08 },
+      { level: 3, title: "Maritime Director",  multiplier: 2.00, cost: 6500000,   salary: 0.14 },
+      { level: 4, title: "Ocean Overlord",     multiplier: 3.00, cost: 25000000,  salary: 0.20 }
+    ]
+  }
+};
+
 // ── HIRE & UPGRADE ────────────────────────────────────────────
 
 // Hires the manager at Level 1. Only works if no manager is hired yet.
@@ -237,5 +312,140 @@ function renderManager() {
            </button>`
       }
     `;
+  }
+
+  // ── Sector Managers section (Update 5.6) ──────────────────
+  const sectorHTML = Object.values(SECTOR_MANAGERS).map(mgr => {
+    const currentLevel = gameState.sectorManagers[mgr.id] || 0;
+    const isHired      = currentLevel > 0;
+    const isMaxed      = currentLevel >= mgr.levels.length;
+    const currentData  = isHired ? mgr.levels[currentLevel - 1] : null;
+    const nextData     = (!isMaxed) ? mgr.levels[currentLevel] : null;
+
+    // Airline manager requires Galactic Airlines to be purchased.
+    // Yacht manager requires Yacht Empire to be purchased.
+    const requiresAirline = mgr.id === "airline" &&
+      !(gameState.ownedBusinesses && gameState.ownedBusinesses["galactic_airlines"]);
+    const requiresYacht = mgr.id === "yacht" &&
+      !(gameState.yachtBusinessLevel && gameState.yachtBusinessLevel > 0);
+    const isLocked   = requiresAirline || requiresYacht;
+    const lockReason = requiresAirline
+      ? "Purchase Galactic Airlines first"
+      : requiresYacht
+      ? "Purchase Yacht Empire first"
+      : null;
+
+    const canAfford = !isLocked && nextData && gameState.cash >= nextData.cost;
+
+    return `
+      <div class="sector-manager-card${isLocked ? ' sector-mgr-locked' : ''}">
+        <div class="sector-mgr-header">
+          <span class="sector-mgr-emoji">${mgr.emoji}</span>
+          <div class="sector-mgr-info">
+            <strong>${mgr.name}</strong>
+            <span class="sector-mgr-sector">Sector: ${mgr.sector}</span>
+            ${isHired
+              ? `<span class="sector-mgr-title">${currentData.title}
+                   · ${((currentData.multiplier - 1) * 100).toFixed(0)}% income boost
+                   · ${(currentData.salary * 100).toFixed(0)}% salary</span>`
+              : `<span class="sector-mgr-desc">${mgr.description}</span>`
+            }
+          </div>
+        </div>
+        ${isLocked
+          ? `<div class="sector-mgr-lock-notice" data-locked-reason="${lockReason}">${lockReason}</div>`
+          : isMaxed
+          ? `<button class="btn btn-maxed" disabled>MAXED</button>`
+          : `<button class="btn ${canAfford ? (isHired ? 'btn-upgrade' : 'btn-buy') : 'btn-locked'}"
+                     onclick="hireSectorManager('${mgr.id}')"
+                     ${canAfford ? '' : 'disabled'}
+                     data-locked-reason="Need ${nextData ? formatMoney(nextData.cost) : ''}">
+               ${isHired
+                 ? 'Upgrade → ' + nextData.title + ' — ' + formatMoney(nextData.cost)
+                 : 'Hire — ' + formatMoney(mgr.levels[0].cost)
+               }
+             </button>`
+        }
+      </div>
+    `;
+  }).join("");
+
+  container.innerHTML += `
+    <div class="sector-managers-section">
+      <div class="sector-managers-title">Sector Managers</div>
+      ${sectorHTML}
+    </div>
+  `;
+}
+
+// ── SECTOR MANAGER FUNCTIONS (Update 5.6) ────────────────────
+
+// Hires a sector manager at Level 1, or upgrades if already hired.
+// managerId must match a key in SECTOR_MANAGERS.
+function hireSectorManager(managerId) {
+  const mgr = SECTOR_MANAGERS[managerId];
+  if (!mgr) return;
+
+  const currentLevel    = gameState.sectorManagers[managerId] || 0;
+  if (currentLevel >= mgr.levels.length) {
+    showToast(mgr.name + " is already maxed out!");
+    return;
+  }
+
+  const targetLevelData = mgr.levels[currentLevel]; // 0-indexed → next level
+  if (gameState.cash < targetLevelData.cost) {
+    showToast("Not enough cash to hire/upgrade " + mgr.name + "!");
+    return;
+  }
+
+  gameState.cash -= targetLevelData.cost;
+  gameState.sectorManagers[managerId] = currentLevel + 1;
+
+  recalculateStats();
+  saveGame();
+  renderManager();
+  updateUI();
+
+  const isFirstHire = currentLevel === 0;
+  showToast(isFirstHire
+    ? mgr.emoji + " " + mgr.name + " hired! (" + targetLevelData.title + ")"
+    : mgr.emoji + " Upgraded to " + targetLevelData.title + "!");
+}
+
+// Returns the income multiplier for a given sector manager.
+// Returns 1.0 (no effect) if the manager is not hired.
+// managerId: 'real_estate' | 'market' | 'business' | 'airline' | 'yacht'
+function getSectorMultiplier(managerId) {
+  const level = gameState.sectorManagers[managerId] || 0;
+  if (level === 0) return 1.0;
+  const mgr = SECTOR_MANAGERS[managerId];
+  return mgr.levels[level - 1].multiplier;
+}
+
+// Called every second by mainGameLoop().
+// Deducts sector manager salaries from cash (salary % of their sector's income).
+function processSectorManagerSalaries() {
+  let totalSalary = 0;
+  for (const managerId in gameState.sectorManagers) {
+    const level = gameState.sectorManagers[managerId];
+    if (!level || level === 0) continue;
+
+    const mgr       = SECTOR_MANAGERS[managerId];
+    const levelData = mgr.levels[level - 1];
+
+    let sectorIncome = 0;
+    if (managerId === "real_estate") sectorIncome = calculatePropertyIncome()      * getSectorMultiplier("real_estate");
+    if (managerId === "market")      sectorIncome = (calculateStockDividends() + calculateCryptoDividends()) * getSectorMultiplier("market");
+    if (managerId === "business")    sectorIncome = (calculateBusinessIncome() + calculateYachtBusinessIncome()) * getSectorMultiplier("business");
+    if (managerId === "airline")     sectorIncome = calculateAirlineFleetIncome()  * getSectorMultiplier("airline");
+    if (managerId === "yacht")       sectorIncome = calculateYachtFleetIncome()    * getSectorMultiplier("yacht");
+
+    totalSalary += sectorIncome * levelData.salary;
+  }
+
+  if (totalSalary > 0) {
+    gameState.cash -= totalSalary;
+    gameState.totalManagerSalaryPaid =
+      (gameState.totalManagerSalaryPaid || 0) + totalSalary;
   }
 }

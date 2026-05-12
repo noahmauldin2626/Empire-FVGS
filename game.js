@@ -33,7 +33,7 @@
 // Update this string each time you ship a new update.
 // The changelog modal auto-shows once when this doesn't match
 // what's stored in gameState.lastSeenChangelog.
-const CHANGELOG_VERSION = "5_5";
+const CHANGELOG_VERSION = "5_6";
 
 // ── ACTIVE USERNAME ────────────────────────────────────────────
 // Holds the name the player typed on the username screen.
@@ -78,6 +78,14 @@ const gameState = {
   // --- Crypto (Update 3 — Investment: affects net worth and income) ---
   ownedCoins:   {},      // { coinId: coinsOwned }       e.g. { bytecoin: 2 }
   cryptoPrices: {},      // { coinId: currentPrice }     changes over time
+
+  // --- Airline Fleet (Update 5.6) ---
+  ownedAirlines: {},     // { assetId: tierNumber }
+
+  // --- Sector Managers (Update 5.6) ---
+  // { managerId: level }  e.g. { real_estate: 2, market: 1 }
+  // 0 or missing = not hired
+  sectorManagers: {},
 
   // --- Portfolio Cost Basis (Update 5.5) ---
   // Tracks total cash spent on each stock/coin across all buy transactions.
@@ -282,6 +290,10 @@ function fillMissingFields() {
   if (!gameState.stockSpent) gameState.stockSpent = {};
   if (!gameState.coinSpent)  gameState.coinSpent  = {};
 
+  // --- Fields added in Update 5.6 ---
+  if (!gameState.ownedAirlines)  gameState.ownedAirlines  = {};
+  if (!gameState.sectorManagers) gameState.sectorManagers = {};
+
   // Update 5.5 guard — seeds prices for any NEW coins added to CRYPTOS
   // that are missing from an existing save's cryptoPrices object.
   // Runs for returning players whose saves pre-date the new coins.
@@ -426,7 +438,11 @@ function playAgain() {
 
     // Update 5.5 keys: reset cost basis tracking for new run
     stockSpent: {},
-    coinSpent:  {}
+    coinSpent:  {},
+
+    // Update 5.6 keys:
+    ownedAirlines:  {},
+    sectorManagers: {}
   });
 
   document.getElementById("win-screen").style.display   = "none";
@@ -446,25 +462,35 @@ function recalculateStats() {
   const yachtClickBonus    = calculateYachtBusinessClickBonus(); // Update 4
   gameState.clickValue = 1 + propClickBonus + businessClickBonus + yachtClickBonus;
 
-  // --- Passive Income Per Second ---
-  const propIncome       = calculatePropertyIncome();
-  const stockDividends   = calculateStockDividends();
-  const bizIncome        = calculateBusinessIncome();
-  const cryptoDividends  = calculateCryptoDividends();  // Update 3
-  const yachtBizIncome   = calculateYachtBusinessIncome();  // Update 4
-  const yachtFleetIncome = calculateYachtFleetIncome();     // Update 4
-  gameState.passiveIncome = propIncome + stockDividends + bizIncome
-                          + cryptoDividends + yachtBizIncome + yachtFleetIncome;
+  // --- Sector Manager Multipliers (Update 5.6) ---
+  const mProp    = getSectorMultiplier("real_estate");
+  const mMarket  = getSectorMultiplier("market");
+  const mBiz     = getSectorMultiplier("business");
+  const mAirline = getSectorMultiplier("airline");
+  const mYacht   = getSectorMultiplier("yacht");
 
-  // --- Net Worth ---
-  const propNetWorth  = calculatePropertyNetWorth();
-  const stockValue    = calculateStockNetWorth();
-  const bizNetWorth   = calculateBusinessNetWorth();
-  const cryptoValue   = calculateCryptoNetWorth();       // Update 3
-  const yachtBizNW    = calculateYachtBusinessNetWorth(); // Update 4
-  const yachtFleetNW  = calculateYachtFleetNetWorth();    // Update 4
-  gameState.netWorth  = gameState.cash + propNetWorth + stockValue + bizNetWorth
-                      + cryptoValue + yachtBizNW + yachtFleetNW;
+  // --- Passive Income Per Second (multiplied by sector managers) ---
+  const propIncome       = calculatePropertyIncome()       * mProp;
+  const stockDividends   = calculateStockDividends()       * mMarket;
+  const bizIncome        = calculateBusinessIncome()       * mBiz;
+  const cryptoDividends  = calculateCryptoDividends()      * mMarket; // shares market multiplier
+  const yachtBizIncome   = calculateYachtBusinessIncome()  * mBiz;    // yacht biz = business sector
+  const yachtFleetIncome = calculateYachtFleetIncome()     * mYacht;
+  const airlineFleetIncome = calculateAirlineFleetIncome() * mAirline; // Update 5.6
+  gameState.passiveIncome = propIncome + stockDividends + bizIncome
+                          + cryptoDividends + yachtBizIncome + yachtFleetIncome
+                          + airlineFleetIncome;
+
+  // --- Net Worth (no multipliers — asset value not inflated by managers) ---
+  const propNetWorth   = calculatePropertyNetWorth();
+  const stockValue     = calculateStockNetWorth();
+  const bizNetWorth    = calculateBusinessNetWorth();
+  const cryptoValue    = calculateCryptoNetWorth();        // Update 3
+  const yachtBizNW     = calculateYachtBusinessNetWorth(); // Update 4
+  const yachtFleetNW   = calculateYachtFleetNetWorth();    // Update 4
+  const airlineFleetNW = calculateAirlineFleetNetWorth();  // Update 5.6
+  gameState.netWorth   = gameState.cash + propNetWorth + stockValue + bizNetWorth
+                       + cryptoValue + yachtBizNW + yachtFleetNW + airlineFleetNW;
   // Note: Cars (ownedCars) and Home (homeTier) are intentionally excluded — vanity only.
 }
 
@@ -480,6 +506,7 @@ function mainGameLoop() {
   }
 
   processManagerTap(1);
+  processSectorManagerSalaries();   // Update 5.6 — sector manager salaries
   recalculateStats();
   checkChapterUnlocks();
   checkRichListRank();
@@ -530,8 +557,11 @@ function unlockChapter(chapterNum) {
 
   // Update 4: Yacht Fleet panel unlocks at $100M net worth
   if (chapterNum === 5) {
-    const el = document.getElementById("yacht-fleet-section");
-    if (el) { el.classList.remove("panel-locked"); renderYachtFleet(); }
+    const yachtEl = document.getElementById("yacht-fleet-section");
+    if (yachtEl) { yachtEl.classList.remove("panel-locked"); renderYachtFleet(); }
+    // Update 5.6: unlock airline fleet panel too
+    const airlineEl = document.getElementById("airline-fleet-section");
+    if (airlineEl) { airlineEl.classList.remove("panel-locked"); renderAirlineFleet(); }
     triggerDialogue("ch5_unlock");
   }
 }
@@ -699,7 +729,10 @@ function updateUI() {
   if (gameState.chapter >= 2) renderStocks();
   if (gameState.chapter >= 2) renderCrypto();   // Update 3: crypto lives alongside stocks
   if (gameState.chapter >= 3) renderBusinesses(); // also calls renderYachtBusiness() at end
-  if (gameState.chapter >= 5) renderYachtFleet(); // Update 4: yacht fleet panel
+  if (gameState.chapter >= 5) {
+    renderYachtFleet();    // Update 4: yacht fleet panel
+    renderAirlineFleet();  // Update 5.6: airline fleet panel
+  }
 
   // Update 3: Manager is always visible from game start — render it every tick
   renderManager();
@@ -1071,6 +1104,17 @@ function startGame() {
     }
   }
 
+  // ── Airline Fleet panel (Update 5.6, Chapter 5) ────────────
+  const airlinePanel = document.getElementById("airline-fleet-section");
+  if (airlinePanel) {
+    if (gameState.chapter < 5) {
+      airlinePanel.classList.add("panel-locked");
+    } else {
+      airlinePanel.classList.remove("panel-locked");
+      renderAirlineFleet();
+    }
+  }
+
   recalculateStats();
   updateUI();
 
@@ -1195,6 +1239,43 @@ window.addEventListener("DOMContentLoaded", function () {
       heldKeys.delete(e.key);
       stopPowerClick(true); // releasing key triggers cooldown
     }
+  });
+
+  // ── LOCK TOOLTIP SYSTEM (Update 5.6) ──────────────────────────
+  // Shows a tooltip when the player hovers any element with
+  // a data-locked-reason attribute. One global listener handles everything.
+  const lockTooltip = document.createElement("div");
+  lockTooltip.id        = "lock-tooltip";
+  lockTooltip.className = "lock-tooltip";
+  document.body.appendChild(lockTooltip);
+
+  document.addEventListener("mouseover", function (e) {
+    let target = e.target;
+    let reason = null;
+    while (target && target !== document.body) {
+      reason = target.getAttribute("data-locked-reason");
+      if (reason) break;
+      target = target.parentElement;
+    }
+    if (reason) {
+      lockTooltip.textContent   = "🔒 " + reason;
+      lockTooltip.style.display = "block";
+    } else {
+      lockTooltip.style.display = "none";
+    }
+  });
+
+  document.addEventListener("mousemove", function (e) {
+    if (lockTooltip.style.display === "block") {
+      const x = Math.min(e.clientX + 14, window.innerWidth  - 240);
+      const y = Math.min(e.clientY + 14, window.innerHeight - 60);
+      lockTooltip.style.left = x + "px";
+      lockTooltip.style.top  = y + "px";
+    }
+  });
+
+  document.addEventListener("mouseout", function (e) {
+    lockTooltip.style.display = "none";
   });
 
   // Always start on the username screen
