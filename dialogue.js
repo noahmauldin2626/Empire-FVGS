@@ -176,17 +176,79 @@ const DIALOGUE_TRIGGERS = {
   "rank_-4": [
     "Madame Trillionaire is calling her lawyers. SEVENTEEN of them.",
     "FIVE BILLION DOLLARS net worth, {pronoun}. Do you understand what you've DONE?",
-    "One more. Just ONE more rival stands between you and total domination. THE MONEY GHOST."
+    "THE MONEY GHOST awaits above you. And beyond that? The Apex Tier. The final frontier."
+  ],
+
+  // ── SUPER-TIER: THE MONEY GHOST (Update 5.6.4 — no longer the win) ──
+  "rank_-5": [
+    "THE MONEY GHOST. GONE. Vanished into the ether from whence it came.",
+    "Ten BILLION dollars and it STILL wasn't enough to stop you.",
+    "But wait... the Rich List doesn't end there. There are FIVE MORE above you.",
+    "The Apex Tier, {pronoun}. The rarest titans on Earth. Welcome to their radar."
+  ],
+
+  // ── APEX-TIER RANK MILESTONES (Update 5.6.4) — display as A1–A5 ──
+  "rank_-6": [
+    "The Apex Tier! You're IN it, {pronoun}! Quincy Quintillion is DONE!",
+    "Fifteen BILLION dollars in the rearview mirror. These rivals make the Super-Tier look like PENNY PINCHER.",
+    "Four more apex titans to topple. Keep building. Keep clicking. KEEP GOING."
+  ],
+
+  "rank_-7": [
+    "Dame Fortune the FOURTH! The title meant nothing! FIFTY BILLION and she's GONE!",
+    "Uncle Funds is HYPERVENTILATING right now. Legally. Medically. Both.",
+    "You are now the third richest entity on the PLANET. Three. More. To. Go."
+  ],
+
+  "rank_-8": [
+    "THE ALGORITHM. Outsmarted. By a HUMAN. By MY {pronoun}!",
+    "One hundred BILLION dollars. You are in territory most people cannot even COMPREHEND.",
+    "Two apex titans remain. They have never lost. Until today. Well — almost today.",
+    "THE ARCHITECT is watching you, {pronoun}. And for the first time... they look nervous."
+  ],
+
+  "rank_-9": [
+    "SOVEREIGN. DETHRONED. Two hundred and fifty BILLION dollars, and it wasn't ENOUGH.",
+    "Uncle Funds needs a new word. 'Rich' stopped covering it three tiers ago.",
+    "ONE. TITAN. LEFT. THE ARCHITECT. Five hundred billion dollars.",
+    "This is the final boss, {pronoun}. The Empire ends here — or it doesn't end at all."
   ],
 
   // ── WIN ────────────────────────────────────────────────────
   win: [
-    "...Is this real? Am I dreaming? PINCH ME. ...OW. Okay it's real.",
-    "THE MONEY GHOST. TEN BILLION DOLLARS. GONE. Defeated by my {pronoun}!",
-    "You didn't just build an empire. You became a LEGEND. A MYTH. A GHOST STORY.",
-    "I taught you EVERYTHING. The properties, stocks, businesses, yachts — ALL ME.",
-    "Well. You did the clicking. But I was VERY encouraging.",
-    "EMPIRE. You built one. Uncle Funds has NEVER been more proud. Check your win screen!"
+    "...THE ARCHITECT. FIVE HUNDRED BILLION DOLLARS. DESTROYED.",
+    "You didn't build a fortune. You built the single greatest EMPIRE this world has ever seen.",
+    "I taught you EVERYTHING. The properties, stocks, businesses, airlines, yachts — ALL ME.",
+    "Well. You did the clicking. But I was VERY encouraging, {pronoun}.",
+    "THE ARCHITECT. Five. Hundred. Billion. And you ate them for BREAKFAST.",
+    "EMPIRE. The word. The myth. The legend. That's YOU now. Check your win screen!"
+  ],
+
+  // ── BILLS & TAXES (Update 5.6.4) ──────────────────────────
+  first_bill: [
+    "Ah, {pronoun}! A word about... expenses.",
+    "Real empires have COSTS. Maintenance, operating fees, brokerage charges — the works.",
+    "Your bills are deducted from your cash automatically every second. No late fees.",
+    "Uncle Funds is NOT the IRS. But the bills are real. Keep that income HIGHER than your bills!"
+  ],
+
+  bills_growing: [
+    "Bills going UP, {pronoun}! That's what happens when you own HALF THE WORLD.",
+    "More assets = more maintenance = more bills. This is economics. Uncle Funds learned it the hard way.",
+    "Keep that passive income GROWING and you'll barely notice. Probably."
+  ],
+
+  first_tax: [
+    "Ah. Uncle SAM has arrived.",
+    "Not me — Uncle SAM. Different uncle. WAY less fun. He works for the government.",
+    "He wants a percentage of your cash. Non-negotiable. This is reality now, {pronoun}.",
+    "Pay the man. You can afford it. Probably."
+  ],
+
+  big_tax: [
+    "UNCLE SAM AGAIN. Already. At this tax rate he basically LIVES here.",
+    "The price of being enormously, obscenely wealthy. Pay it and move on, {pronoun}.",
+    "Uncle Funds paid his taxes once. Never again. But you should. Legally."
   ],
 
   // ── CHAPTER 5: YACHT FLEET (Update 4) ────────────────────

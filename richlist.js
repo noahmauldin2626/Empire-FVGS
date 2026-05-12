@@ -1,13 +1,16 @@
 // ═══════════════════════════════════════════════════════════════
 // EMPIRE — richlist.js
-// The 10 NPC tycoons the player must outrank.
+// The NPC tycoons the player must outrank.
 // Also handles calculating and displaying the player's current rank.
 // ═══════════════════════════════════════════════════════════════
 
 // The World Rich List — sorted from lowest to highest net worth.
 // The player starts unranked and climbs by growing their net worth.
 // UPDATE 4: Expanded from 10 to 15 entries. Five new Super-Tier rivals
-// (negative ranks) sit above Bill Naire. Win condition = beat THE MONEY GHOST.
+// (negative ranks) sit above Bill Naire.
+// UPDATE 5.6.4: Expanded from 15 to 20 entries. Five new Apex-Tier rivals
+// (ranks -6 to -10) sit above THE MONEY GHOST. Win condition = beat THE ARCHITECT ($500B).
+// Apex Tier displays as A1–A5 (rank -6 = A1, rank -10 = A5).
 const RICH_LIST = [
   { rank: 10, name: "Penny Pincher",       netWorth: 50000,           emoji: "😤" },
   { rank: 9,  name: "Nick L. Dime",        netWorth: 150000,          emoji: "🙄" },
@@ -24,7 +27,13 @@ const RICH_LIST = [
   { rank: -2, name: "Goldie Vaultsworth",   netWorth: 1000000000,     emoji: "💰" },
   { rank: -3, name: "The Yacht Lord",       netWorth: 2500000000,     emoji: "🚤" },
   { rank: -4, name: "Madame Trillionaire",  netWorth: 5000000000,     emoji: "👑" },
-  { rank: -5, name: "THE MONEY GHOST",      netWorth: 10000000000,    emoji: "👻" }
+  { rank: -5, name: "THE MONEY GHOST",      netWorth: 10000000000,    emoji: "👻" },
+  // ── Apex-Tier rivals (Update 5.6.4) — ranks display as A1–A5 ──
+  { rank: -6,  name: "Quincy Quintillion",  netWorth: 15000000000,    emoji: "💎" },
+  { rank: -7,  name: "Dame Fortune IV",     netWorth: 50000000000,    emoji: "🏛️" },
+  { rank: -8,  name: "The Algorithm",       netWorth: 100000000000,   emoji: "🤖" },
+  { rank: -9,  name: "Sovereign",           netWorth: 250000000000,   emoji: "🌐" },
+  { rank: -10, name: "THE ARCHITECT",       netWorth: 500000000000,   emoji: "🏗️" }
 ];
 
 // Returns the player's current rank number on the World Rich List.
@@ -39,7 +48,7 @@ function getPlayerRank(netWorth) {
     }
   }
 
-  // If player has beaten Rank 1 (Bill Naire), they've won!
+  // If player has beaten the last entry (THE ARCHITECT, $500B), they've won!
   if (netWorth > RICH_LIST[RICH_LIST.length - 1].netWorth) {
     return 0; // 0 = WIN
   }
@@ -72,21 +81,28 @@ function renderRichList() {
   let html = `<div class="richlist-title">🌍 World Rich List</div>`;
 
   // Show all NPC entries, highlighting which ones the player has beaten.
-  // Update 4: negative-rank entries (Super-Tier) display as "S1", "S2", etc.
+  // Update 4: Super-Tier (rank -1 to -5) display as "S1"–"S5".
+  // Update 5.6.4: Apex-Tier (rank -6 to -10) display as "A1"–"A5".
   [...RICH_LIST].reverse().forEach(entry => {
     const beaten = playerNetWorth > entry.netWorth;
     const isNext = !beaten && getNextTarget(playerNetWorth) &&
                    getNextTarget(playerNetWorth).rank === entry.rank;
 
-    const isSuperTier = entry.rank < 0;
-    const rankLabel   = isSuperTier ? "S" + Math.abs(entry.rank) : "#" + entry.rank;
-    const extraClass  = isSuperTier ? "super-tier" : "";
+    const isApexTier  = entry.rank < -5;
+    const isSuperTier = entry.rank < 0 && entry.rank >= -5;
+    const rankLabel   = isApexTier  ? "A" + Math.abs(entry.rank + 5)
+                      : isSuperTier ? "S" + Math.abs(entry.rank)
+                      : "#" + entry.rank;
+    const extraClass  = isApexTier  ? "apex-tier"
+                      : isSuperTier ? "super-tier"
+                      : "";
+    const isArchitect = entry.rank === -10;
 
     html += `
       <div class="richlist-entry ${extraClass} ${beaten ? "beaten" : ""} ${isNext ? "next-target" : ""}">
         <span class="richlist-rank">${rankLabel}</span>
         <span class="richlist-emoji">${entry.emoji}</span>
-        <span class="richlist-name">${entry.name}</span>
+        <span class="richlist-name ${isArchitect ? "architect-name" : ""}">${entry.name}</span>
         <span class="richlist-worth">${formatMoney(entry.netWorth)}</span>
         ${beaten ? '<span class="richlist-check">✅</span>' : ''}
         ${isNext ? '<span class="richlist-arrow">👈 YOU</span>' : ''}
@@ -95,9 +111,10 @@ function renderRichList() {
   });
 
   // Show the player's own entry at the bottom.
-  // Handle super-tier ranks (negative) gracefully.
+  // Handle super-tier (S1–S5) and apex-tier (A1–A5) ranks gracefully.
   const playerRankLabel = playerRank === 11 ? "??"
     : playerRank === 0  ? "👑"
+    : playerRank < -5   ? "A" + Math.abs(playerRank + 5)
     : playerRank < 0    ? "S" + Math.abs(playerRank)
     : "#" + playerRank;
 

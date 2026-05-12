@@ -17,7 +17,7 @@
 <div id="username-screen">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.3 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.4 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -88,7 +88,7 @@
 <div id="intro-screen" style="display:none;">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.3 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.4 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -126,11 +126,11 @@
      Appears on top of everything when the player beats Bill Naire.
      ════════════════════════════════════════════════════════════ -->
 <div id="win-screen">
-  <div class="win-emoji">👑🤑👑</div>
+  <div class="win-emoji">🏗️👑🏗️</div>
   <div class="win-title">YOU WON!</div>
   <p class="win-congrats">
     Congratulations, <strong id="win-player-name"></strong>!<br>
-    You dethroned Bill Naire and became the richest person on Earth.<br>
+    You defeated THE ARCHITECT and built the greatest empire the world has ever known.<br>
     Uncle Funds is absolutely WEEPING right now.
   </p>
 
@@ -172,7 +172,7 @@
   <div class="modal-inner modal-changelog">
 
     <div class="modal-header">
-      <span>📋 What's New — Update 5.6.3</span>
+      <span>📋 What's New — Update 5.6.4</span>
       <!-- X button calls dismissChangelog() in game.js -->
       <button class="modal-close-btn" onclick="dismissChangelog()">✕</button>
     </div>
@@ -182,47 +182,30 @@
 
       <ul class="changelog-list">
         <li>
-          <strong>Airline Fleet</strong> —
-          Galactic Airlines now works like Yacht Empire. Owning the business
-          unlocks an Airline Fleet panel where you can buy and rent out 5
-          airline routes, from a tiny Puddle Jumper to the legendary
-          Galactic One. Fleet tier is gated by your Galactic Airlines
-          upgrade level.
+          <strong>💸 Bills System</strong> —
+          Running an empire has costs. Every sector now generates operating
+          expenses — property taxes, brokerage fees, business overheads,
+          airline maintenance, and yacht upkeep. Bills are automatically
+          deducted from your cash each second. Keep your passive income
+          higher than your bills to stay in the green!
         </li>
         <li>
-          <strong>Sector Managers</strong> —
-          5 new specialist managers, one for each major income sector:
-          Real Estate, Stocks &amp; Crypto (shared), Businesses,
-          Airline Fleet, and Yacht Fleet. Each manager boosts their
-          sector's passive income by up to 3× at max level. Upgradeable
-          through 4 levels. Find them in the Manager panel.
+          <strong>🇺🇸 Uncle Sam Tax</strong> —
+          The taxman visits periodically. Uncle Sam drops by to collect
+          a percentage of your current cash, with the rate and frequency
+          scaling by your net worth tier. Pay up — there's no escaping him.
         </li>
         <li>
-          <strong>Locked Item Tooltips</strong> —
-          Hovering any locked card, button, or panel now shows a tooltip
-          explaining exactly what you need to unlock it. No more guessing.
+          <strong>🏗️ Expanded Rich List — Apex Tier</strong> —
+          The Rich List has grown from 15 to 20 rivals. Five brand-new
+          Apex-Tier titans (A1–A5) sit above THE MONEY GHOST, topped by
+          the ultimate endgame boss: THE ARCHITECT at $500 Billion.
+          Beat THE ARCHITECT to win the game.
         </li>
         <li>
-          <strong>Power Click Tuned</strong> —
-          Hold ENTER or SPACE to activate. Duration reduced from 15s to
-          10s for a tighter, more intentional burst. 3-second cooldown
-          unchanged.
-        </li>
-      </ul>
-
-      <p style="font-size:0.78rem; color:#757575; margin: 0.5rem 0 0.25rem; font-weight:700;">
-        5.6.2 — 5.6.3 Patch Notes
-      </p>
-      <ul class="changelog-list">
-        <li>
-          <strong>Airline Fleet Unlock Fix</strong> —
-          Airline Fleet now unlocks independently at $50M net worth,
-          separate from the Yacht Fleet ($100M). Get in the air sooner.
-        </li>
-        <li>
-          <strong>UI Layout Fix</strong> —
-          Airline Fleet panel now appears to the left of Yacht Fleet
-          in the bottom row, matching the unlock order ($50M before $100M).
+          <strong>🏆 New Win Condition</strong> —
+          Surpass THE ARCHITECT's $500 Billion net worth to claim victory.
+          THE MONEY GHOST ($10B) is now a milestone, not the finish line.
         </li>
       </ul>
 
@@ -234,6 +217,36 @@
 
   </div>
 </div><!-- /changelog-modal -->
+
+
+<!-- ════════════════════════════════════════════════════════════
+     UNCLE SAM MODAL — Update 5.6.4
+     Triggered periodically by checkTaxEvent() in game.js.
+     showUncleSamModal() / dismissUncleSam() are in game.js.
+     ════════════════════════════════════════════════════════════ -->
+<div id="uncle-sam-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-inner">
+
+    <div class="uncle-sam-header">
+      <div class="uncle-sam-flag">🇺🇸</div>
+      <div class="uncle-sam-title">UNCLE SAM IS HERE</div>
+      <p class="uncle-sam-quote">"I want YOU... to pay your taxes."</p>
+    </div>
+
+    <div class="modal-body" style="padding:0 1.2rem 1.2rem;">
+      <div class="uncle-sam-amount-block">
+        <span class="uncle-sam-rate-label">Tax Rate: <strong id="uncle-sam-rate">0%</strong> of current cash</span>
+        <span class="uncle-sam-amount-label">Amount Due:</span>
+        <span class="uncle-sam-amount" id="uncle-sam-amount">$0</span>
+      </div>
+      <!-- Clicking either button calls dismissUncleSam(true) — tax is non-negotiable -->
+      <button class="btn uncle-sam-pay-btn" onclick="dismissUncleSam(true)">
+        💸 Pay Taxes
+      </button>
+    </div>
+
+  </div>
+</div><!-- /uncle-sam-modal -->
 
 
 <!-- ════════════════════════════════════════════════════════════
@@ -331,6 +344,11 @@
     <div class="top-stat">
       <span class="top-stat-label">⚡ Income</span>
       <span class="top-stat-value" id="display-income">$0/sec</span>
+    </div>
+
+    <div class="top-stat">
+      <span class="top-stat-label">💸 Bills</span>
+      <span class="top-stat-value bills-display" id="display-bills">$0/sec</span>
     </div>
 
     <div class="top-stat">

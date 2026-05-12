@@ -33,7 +33,7 @@
 // Update this string each time you ship a new update.
 // The changelog modal auto-shows once when this doesn't match
 // what's stored in gameState.lastSeenChangelog.
-const CHANGELOG_VERSION = "5_6_3";
+const CHANGELOG_VERSION = "5_6_4";
 
 // ── ACTIVE USERNAME ────────────────────────────────────────────
 // Holds the name the player typed on the username screen.
@@ -133,6 +133,14 @@ const gameState = {
 
   // --- Changelog (Update 3) ---
   lastSeenChangelog: "",  // set to CHANGELOG_VERSION after the player sees the modal
+
+  // --- Bills & Taxes (Update 5.6.4) ---
+  totalBillsPaid:  0,     // lifetime total cash deducted by operating bills
+  hasSeenFirstBill: false, // true after the first-bill tutorial fires
+  totalTaxPaid:    0,     // lifetime total cash paid to Uncle Sam
+  hasSeenFirstTax: false, // true after the first-tax tutorial fires
+  lastTaxTime:     0,     // Date.now() timestamp of last tax event (0 = not yet started)
+  taxEventPending: false, // true while the Uncle Sam modal is open
 };
 
 // ── POWER CLICK STATE ──────────────────────────────────────────
@@ -296,6 +304,14 @@ function fillMissingFields() {
   if (!gameState.sectorManagers)                   gameState.sectorManagers       = {};
   if (gameState.airlineFleetUnlocked === undefined) gameState.airlineFleetUnlocked = false;
 
+  // --- Fields added in Update 5.6.4 ---
+  if (gameState.totalBillsPaid  === undefined) gameState.totalBillsPaid  = 0;
+  if (gameState.hasSeenFirstBill === undefined) gameState.hasSeenFirstBill = false;
+  if (gameState.totalTaxPaid    === undefined) gameState.totalTaxPaid    = 0;
+  if (gameState.hasSeenFirstTax === undefined) gameState.hasSeenFirstTax = false;
+  if (gameState.lastTaxTime     === undefined) gameState.lastTaxTime     = 0;
+  if (gameState.taxEventPending === undefined) gameState.taxEventPending = false;
+
   // Update 5.5 guard — seeds prices for any NEW coins added to CRYPTOS
   // that are missing from an existing save's cryptoPrices object.
   // Runs for returning players whose saves pre-date the new coins.
@@ -445,7 +461,15 @@ function playAgain() {
     // Update 5.6 keys:
     ownedAirlines:        {},
     sectorManagers:       {},
-    airlineFleetUnlocked: false
+    airlineFleetUnlocked: false,
+
+    // Update 5.6.4 keys:
+    totalBillsPaid:   0,
+    hasSeenFirstBill: false,
+    totalTaxPaid:     0,
+    hasSeenFirstTax:  false,
+    lastTaxTime:      0,
+    taxEventPending:  false
   });
 
   document.getElementById("win-screen").style.display   = "none";
@@ -497,6 +521,134 @@ function recalculateStats() {
   // Note: Cars (ownedCars) and Home (homeTier) are intentionally excluded — vanity only.
 }
 
+// ── BILLS SYSTEM (Update 5.6.4) ────────────────────────────────
+
+// Returns the total operating bills per second across all sectors.
+// Deducted from cash each tick in mainGameLoop — cash never goes below 0.
+function calculateTotalBills() {
+  const mProp    = getSectorMultiplier("real_estate");
+  const mMarket  = getSectorMultiplier("market");
+  const mBiz     = getSectorMultiplier("business");
+  const mAirline = getSectorMultiplier("airline");
+  const mYacht   = getSectorMultiplier("yacht");
+
+  // Property taxes & maintenance (15% of property income)
+  const propBills     = calculatePropertyIncome()      * mProp    * 0.15;
+  // Brokerage & trading fees (8% of stock dividends)
+  const stockBills    = calculateStockDividends()      * mMarket  * 0.08;
+  // Exchange fees (5% of crypto dividends)
+  const cryptoBills   = calculateCryptoDividends()     * mMarket  * 0.05;
+  // Business operating costs (20% of business income)
+  const bizBills      = calculateBusinessIncome()      * mBiz     * 0.20;
+  // Yacht business overhead (18% of yacht business income)
+  const yachtBizBills = calculateYachtBusinessIncome() * mBiz     * 0.18;
+  // Yacht fleet maintenance (25% of yacht fleet income)
+  const yachtBills    = calculateYachtFleetIncome()    * mYacht   * 0.25;
+  // Airline fleet operations (22% of airline fleet income)
+  const airlineBills  = calculateAirlineFleetIncome()  * mAirline * 0.22;
+
+  return propBills + stockBills + cryptoBills + bizBills + yachtBizBills + yachtBills + airlineBills;
+}
+
+// ── TAX SYSTEM (Update 5.6.4) ──────────────────────────────────
+
+// Tax tiers: sorted highest net worth first so getCurrentTaxTier()
+// returns the highest applicable tier on the first match.
+const TAX_TIERS = [
+  { minNetWorth: 500000000,  taxRate: 0.20, intervalSec: 30  }, // $500M+: 20% every 30s
+  { minNetWorth: 100000000,  taxRate: 0.15, intervalSec: 45  }, // $100M+: 15% every 45s
+  { minNetWorth: 10000000,   taxRate: 0.12, intervalSec: 60  }, // $10M+:  12% every 60s
+  { minNetWorth: 1000000,    taxRate: 0.08, intervalSec: 90  }, // $1M+:   8%  every 90s
+  { minNetWorth: 100000,     taxRate: 0.05, intervalSec: 120 }, // $100K+: 5%  every 2min
+];
+
+// Returns the highest applicable tax tier based on current net worth, or null if below threshold.
+function getCurrentTaxTier() {
+  for (const tier of TAX_TIERS) {
+    if (gameState.netWorth >= tier.minNetWorth) return tier;
+  }
+  return null;
+}
+
+// Called every second from mainGameLoop — checks if it's time for Uncle Sam.
+function checkTaxEvent() {
+  if (gameState.taxEventPending) return; // modal already open
+  const tier = getCurrentTaxTier();
+  if (!tier) return;
+
+  const now = Date.now();
+  // First call: initialise the timer from now so we don't immediately tax on load.
+  if (!gameState.lastTaxTime) {
+    gameState.lastTaxTime = now;
+    return;
+  }
+
+  const elapsedSec = (now - gameState.lastTaxTime) / 1000;
+  if (elapsedSec >= tier.intervalSec) {
+    triggerTaxEvent(tier);
+  }
+}
+
+// Fires the Uncle Sam tax event.
+function triggerTaxEvent(tier) {
+  const taxAmount = Math.floor(gameState.cash * tier.taxRate);
+  if (taxAmount <= 0) {
+    // Nothing to collect — just reset the timer and move on.
+    gameState.lastTaxTime = Date.now();
+    return;
+  }
+
+  gameState.taxEventPending = true;
+
+  // Dialogue tutorial (fires once per type)
+  if (!gameState.hasSeenFirstTax) {
+    gameState.hasSeenFirstTax = true;
+    triggerDialogue("first_tax");
+  } else if (tier.taxRate >= 0.15) {
+    triggerDialogue("big_tax");
+  }
+
+  showUncleSamModal(taxAmount, tier.taxRate);
+}
+
+// Opens the Uncle Sam modal, displaying the amount due.
+function showUncleSamModal(taxAmount, taxRate) {
+  const modal = document.getElementById("uncle-sam-modal");
+  if (!modal) return;
+
+  const amountEl = document.getElementById("uncle-sam-amount");
+  const rateEl   = document.getElementById("uncle-sam-rate");
+  if (amountEl) amountEl.textContent = formatMoney(taxAmount);
+  if (rateEl)   rateEl.textContent   = Math.round(taxRate * 100) + "%";
+
+  // Store the exact integer amount so the pay button uses the same figure.
+  modal.dataset.taxAmount = taxAmount;
+  modal.style.display = "flex";
+}
+
+// Called by the Pay button in the Uncle Sam modal.
+// Tax is mandatory — this always deducts the cash (clamped to 0).
+function dismissUncleSam(pay) {
+  const modal = document.getElementById("uncle-sam-modal");
+  if (!modal) return;
+
+  if (pay) {
+    const amount = parseInt(modal.dataset.taxAmount || "0", 10);
+    if (amount > 0) {
+      gameState.cash = Math.max(0, gameState.cash - amount);
+      gameState.totalTaxPaid = (gameState.totalTaxPaid || 0) + amount;
+      showToast("💸 Tax paid: " + formatMoney(amount));
+    }
+  }
+
+  gameState.taxEventPending = false;
+  gameState.lastTaxTime     = Date.now();
+  modal.style.display = "none";
+
+  recalculateStats();
+  updateUI();
+}
+
 // ── MAIN GAME LOOP ─────────────────────────────────────────────
 
 // Runs every second. Handles passive income, manager, unlocks, UI.
@@ -508,11 +660,25 @@ function mainGameLoop() {
     gameState.totalEarned += gameState.passiveIncome;
   }
 
+  // Deduct operating bills each second (Update 5.6.4)
+  const bills = calculateTotalBills();
+  if (bills > 0) {
+    gameState.cash = Math.max(0, gameState.cash - bills);
+    gameState.totalBillsPaid = (gameState.totalBillsPaid || 0) + bills;
+
+    // Fire the first-bill tutorial once bills are non-trivial and intro is done
+    if (!gameState.hasSeenFirstBill && bills >= 1 && gameState.hasSeenIntro) {
+      gameState.hasSeenFirstBill = true;
+      triggerDialogue("first_bill");
+    }
+  }
+
   processManagerTap(1);
   processSectorManagerSalaries();   // Update 5.6 — sector manager salaries
   recalculateStats();
   checkChapterUnlocks();
   checkRichListRank();
+  checkTaxEvent();                  // Update 5.6.4 — Uncle Sam tax events
   updateUI();
 }
 
@@ -583,7 +749,12 @@ const RANK_DIALOGUES = {
   2: "rank_2",   0: "win",
   // Update 4: Super-Tier ranks use string keys (JS coerces negative ints to strings)
   "-1": "rank_-1", "-2": "rank_-2",
-  "-3": "rank_-3", "-4": "rank_-4"
+  "-3": "rank_-3", "-4": "rank_-4",
+  // Update 5.6.4: THE MONEY GHOST milestone + Apex Tier ranks A1–A4
+  // (beating rank -10 / THE ARCHITECT returns rank 0 = "win" — handled above)
+  "-5": "rank_-5",
+  "-6": "rank_-6", "-7": "rank_-7",
+  "-8": "rank_-8", "-9": "rank_-9"
 };
 
 function checkRichListRank() {
@@ -720,10 +891,15 @@ function updateUI() {
   setText("display-click",        formatMoney(gameState.clickValue) + "/click");
   setText("display-click-center", formatMoney(gameState.clickValue));
 
+  // Update 5.6.4: Bills display (red, shows operating costs per second)
+  const bills = calculateTotalBills();
+  setText("display-bills", "−" + formatMoney(bills) + "/sec");
+
   const rank = gameState.currentRank;
   const rankDisplay = rank === 11 ? "Unranked"
     : rank === 0 ? "👑 #1!"
-    : rank < 0   ? "S" + Math.abs(rank)  // Update 4: Super-Tier display
+    : rank < -5  ? "A" + Math.abs(rank + 5)  // Update 5.6.4: Apex-Tier A1–A5
+    : rank < 0   ? "S" + Math.abs(rank)       // Update 4: Super-Tier S1–S5
     : "#" + rank;
   setText("display-rank", rankDisplay);
 

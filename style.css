@@ -1369,6 +1369,136 @@ h1, h2, h3, .panel-title {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   UPDATE 5.6.4 STYLES
+   Bills display, Uncle Sam modal, Apex-Tier rich list, THE ARCHITECT shimmer.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── BILLS DISPLAY (top bar stat — shown in red) ──────────────
+   Applied to the value span inside the Bills top-stat block.    */
+.bills-display {
+  color: #ef5350 !important;
+}
+
+/* ── APEX-TIER RICH LIST ENTRIES (ranks A1–A5) ───────────────── */
+.richlist-entry.apex-tier {
+  background: linear-gradient(90deg, rgba(255,111,0,0.08), rgba(255,193,7,0.10), rgba(255,111,0,0.08));
+  border-left: 3px solid #ff8c00;
+}
+
+.richlist-entry.apex-tier .richlist-rank {
+  color: #e65100;
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.richlist-entry.apex-tier .richlist-name {
+  color: #bf360c;
+  font-weight: 700;
+}
+
+.richlist-entry.apex-tier .richlist-worth {
+  color: #e65100;
+  font-weight: 800;
+}
+
+/* ── THE ARCHITECT shimmer (rank A5 / win condition) ─────────── */
+@keyframes architect-shimmer {
+  0%   { background-position: 0%   center; }
+  100% { background-position: 200% center; }
+}
+
+.architect-name {
+  background: linear-gradient(90deg, #ffd700, #ff8c00, #ff4500, #ff8c00, #ffd700);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: architect-shimmer 3s linear infinite;
+  font-weight: 900 !important;
+  font-size: 0.88rem;
+  letter-spacing: 0.5px;
+}
+
+/* ── UNCLE SAM MODAL ─────────────────────────────────────────── */
+#uncle-sam-modal .modal-inner {
+  max-width: 420px;
+  border-top: 5px solid #b71c1c;
+}
+
+.uncle-sam-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1.2rem 1.2rem 0;
+  text-align: center;
+}
+
+.uncle-sam-flag {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.uncle-sam-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.5rem;
+  color: #b71c1c;
+  letter-spacing: 1px;
+}
+
+.uncle-sam-quote {
+  font-size: 0.9rem;
+  color: #757575;
+  font-style: italic;
+  margin: 0.3rem 0 1rem;
+  text-align: center;
+}
+
+.uncle-sam-amount-block {
+  background: #fff3e0;
+  border: 2px solid #ff8c00;
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  margin: 0 0 1rem;
+  text-align: center;
+}
+
+.uncle-sam-rate-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #757575;
+  margin-bottom: 0.3rem;
+}
+
+.uncle-sam-amount-label {
+  display: block;
+  font-size: 0.85rem;
+  color: #6d4c41;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.uncle-sam-amount {
+  display: block;
+  font-family: 'Fredoka One', cursive;
+  font-size: 2rem;
+  color: #b71c1c;
+  font-weight: 900;
+}
+
+.uncle-sam-pay-btn {
+  width: 100%;
+  font-size: 1rem;
+  padding: 0.7rem 1rem !important;
+  background: linear-gradient(90deg, #c62828, #e53935) !important;
+  border-color: #b71c1c !important;
+}
+
+.uncle-sam-pay-btn:hover {
+  background: linear-gradient(90deg, #b71c1c, #c62828) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
    UPDATE 5.1 STYLES
    Power Click indicator, new rarity tiers, dealer tabs, settings modal.
    ══════════════════════════════════════════════════════════════ */
