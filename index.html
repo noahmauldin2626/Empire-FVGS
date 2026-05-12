@@ -17,7 +17,7 @@
 <div id="username-screen">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.2 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.3 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -88,7 +88,7 @@
 <div id="intro-screen" style="display:none;">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.2 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.3 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -172,7 +172,7 @@
   <div class="modal-inner modal-changelog">
 
     <div class="modal-header">
-      <span>📋 What's New — Update 5.6.2</span>
+      <span>📋 What's New — Update 5.6.3</span>
       <!-- X button calls dismissChangelog() in game.js -->
       <button class="modal-close-btn" onclick="dismissChangelog()">✕</button>
     </div>
@@ -211,13 +211,18 @@
       </ul>
 
       <p style="font-size:0.78rem; color:#757575; margin: 0.5rem 0 0.25rem; font-weight:700;">
-        5.6.2 Patch Notes
+        5.6.2 — 5.6.3 Patch Notes
       </p>
       <ul class="changelog-list">
         <li>
           <strong>Airline Fleet Unlock Fix</strong> —
           Airline Fleet now unlocks independently at $50M net worth,
           separate from the Yacht Fleet ($100M). Get in the air sooner.
+        </li>
+        <li>
+          <strong>UI Layout Fix</strong> —
+          Airline Fleet panel now appears to the left of Yacht Fleet
+          in the bottom row, matching the unlock order ($50M before $100M).
         </li>
       </ul>
 
@@ -463,26 +468,9 @@
       </div>
     </div>
 
-    <!-- Update 4: Yacht Fleet — unlocks at $100M net worth (Chapter 5).
-         renderYachtFleet() in yachts.js fills #yacht-fleet-list.
-         panel-locked is toggled by startGame() / unlockChapter(5).       -->
-    <div id="yacht-fleet-section" class="panel panel-locked">
-      <div class="panel-header"
-           data-locked-reason="Reach $100M net worth to unlock the Yacht Fleet!">🚤 Yacht Fleet</div>
-      <div class="panel-body" style="flex-direction:row; flex-wrap:wrap; gap:0.6rem;">
-        <div id="yacht-fleet-list"
-             style="display:flex; gap:0.6rem; flex-wrap:wrap; width:100%;">
-          <p style="color:#9e9e9e; font-size:0.85rem;
-                    text-align:center; padding:1rem; width:100%;">
-            Reach $100M net worth to unlock the Yacht Fleet!
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Update 5.6: Airline Fleet — unlocks at Chapter 5 ($100M net worth).
+    <!-- Update 5.6: Airline Fleet — unlocks at $50M net worth (Update 5.6.2).
          renderAirlineFleet() in airlines.js fills #airline-fleet-list.
-         panel-locked is toggled by startGame() / unlockChapter(5).       -->
+         panel-locked is toggled by startGame() / checkChapterUnlocks().    -->
     <div id="airline-fleet-section" class="panel panel-locked">
       <div class="panel-header"
            data-locked-reason="Reach $50M net worth and own Galactic Airlines to unlock the fleet!">
@@ -495,6 +483,23 @@
                     padding:1rem; width:100%;">
             Reach $50M net worth and purchase Galactic Airlines to
             unlock the Airline Fleet!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Update 4: Yacht Fleet — unlocks at $100M net worth (Chapter 5).
+         renderYachtFleet() in yachts.js fills #yacht-fleet-list.
+         panel-locked is toggled by startGame() / unlockChapter(5).       -->
+    <div id="yacht-fleet-section" class="panel panel-locked">
+      <div class="panel-header"
+           data-locked-reason="Reach $100M net worth to unlock the Yacht Fleet!">🚤 Yacht Fleet</div>
+      <div class="panel-body" style="flex-direction:row; flex-wrap:wrap; gap:0.6rem;">
+        <div id="yacht-fleet-list"
+             style="display:flex; gap:0.6rem; flex-wrap:wrap; width:100%;">
+          <p style="color:#9e9e9e; font-size:0.85rem;
+                    text-align:center; padding:1rem; width:100%;">
+            Reach $100M net worth to unlock the Yacht Fleet!
           </p>
         </div>
       </div>
