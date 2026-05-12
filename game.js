@@ -41,6 +41,16 @@ const CHANGELOG_VERSION = "update_5_1";
 // Every save/load uses this name so each player has their own slot.
 let activeUsername = "";
 
+// ── LOGIN TWO-PASS STATE ────────────────────────────────────────
+// handleUsernameSubmit() uses a two-pass design:
+//   Pass 1 — loads save + password from Firebase, shows the password field, stops.
+//   Pass 2 — reads what the player typed, validates or saves the password, proceeds.
+// These three variables hold the data between passes so the async results
+// from Pass 1 are still available when Pass 2 runs.
+let loginPending = false;   // true once Pass 1 has shown the password field
+let loginHasSave = false;   // whether an existing save was found (cached from Pass 1)
+let loginSavedPw = null;    // the stored password string, or null if none (cached from Pass 1)
+
 // ── GAME STATE ─────────────────────────────────────────────────
 // This one object holds ALL the live data for the current game.
 // Everything reads from and writes to this object.
@@ -856,6 +866,47 @@ async function handleUsernameSubmit() {
     return;
   }
 
+  const passwordInput = document.getElementById("password-input");
+  const pwWrap        = document.getElementById("password-field-wrap");
+  const pwLabel       = document.getElementById("password-label");
+  const pwHint        = document.getElementById("password-hint");
+
+  // ── PASS 2: password field already visible — act on what was typed ──
+  if (loginPending) {
+    const enteredPw = passwordInput ? passwordInput.value.trim() : "";
+
+    if (loginHasSave && loginSavedPw) {
+      // Scenario C — returning player WITH a saved password: require it
+      if (!enteredPw) {
+        showUsernameError("This account has a password. Please enter it below.");
+        return;
+      }
+      if (enteredPw !== loginSavedPw) {
+        showUsernameError("Incorrect password. Try again.");
+        if (passwordInput) { passwordInput.value = ""; passwordInput.focus(); }
+        return;
+      }
+      // Correct — fall through to proceed
+
+    } else if (loginHasSave && !loginSavedPw) {
+      // Scenario B — returning player, no password yet: optionally save one
+      if (enteredPw) {
+        await savePassword(clean, enteredPw);
+        showToast("Password set! Your account is now protected.");
+      }
+
+    } else {
+      // Scenario A — new player: optionally save a password
+      if (enteredPw) await savePassword(clean, enteredPw);
+    }
+
+    // All three scenarios: done validating — enter the game
+    loginPending = false;
+    proceedToGame(loginHasSave);
+    return;
+  }
+
+  // ── PASS 1: first submit — load save and password, then show the field ──
   showUsernameError("");
   const loadingEl = document.getElementById("username-loading");
   const submitBtn = document.getElementById("username-submit-btn");
@@ -871,49 +922,29 @@ async function handleUsernameSubmit() {
   if (loadingEl) loadingEl.style.display = "none";
   if (submitBtn) submitBtn.disabled = false;
 
-  const passwordInput = document.getElementById("password-input");
-  const pwWrap        = document.getElementById("password-field-wrap");
-  const pwLabel       = document.getElementById("password-label");
-  const pwHint        = document.getElementById("password-hint");
+  // Cache results for Pass 2
+  loginHasSave = hasSave;
+  loginSavedPw = savedPw;
+  loginPending  = true;
 
+  // Show the password field with the correct label for each scenario
   if (hasSave && savedPw) {
-    // Returning player with password — require it
-    if (pwWrap)  pwWrap.style.display   = "block";
-    if (pwLabel) pwLabel.textContent    = "Enter your password:";
-    if (pwHint)  pwHint.textContent     = "Your account is password protected.";
-
-    const enteredPw = passwordInput ? passwordInput.value : "";
-    if (!enteredPw) {
-      showUsernameError("This account has a password. Please enter it below.");
-      return;
-    }
-    if (enteredPw !== savedPw) {
-      showUsernameError("Incorrect password. Try again.");
-      if (passwordInput) { passwordInput.value = ""; passwordInput.focus(); }
-      return;
-    }
-    // Correct — proceed
-    proceedToGame(hasSave);
-
+    // Scenario C — password required
+    if (pwLabel) pwLabel.textContent = "Enter your password:";
+    if (pwHint)  pwHint.textContent  = "Your account is password protected.";
   } else if (hasSave && !savedPw) {
-    // Returning player without a password — optionally set one now
-    const enteredPw = passwordInput ? passwordInput.value.trim() : "";
-    if (enteredPw) {
-      await savePassword(clean, enteredPw);
-      showToast("Password set! Your account is now protected.");
-    }
-    proceedToGame(hasSave);
-
+    // Scenario B — returning player, no password on file
+    if (pwLabel) pwLabel.textContent = "Set a password (optional):";
+    if (pwHint)  pwHint.textContent  = "Add a password to protect your save. Leave blank to skip.";
   } else {
-    // New player — show optional password field, then proceed
-    if (pwWrap)  pwWrap.style.display   = "block";
-    if (pwLabel) pwLabel.textContent    = "Set a password (optional):";
-    if (pwHint)  pwHint.textContent     = "Protects your save from others. Leave blank to skip.";
-
-    const enteredPw = passwordInput ? passwordInput.value.trim() : "";
-    if (enteredPw) await savePassword(clean, enteredPw);
-    proceedToGame(hasSave);
+    // Scenario A — new player
+    if (pwLabel) pwLabel.textContent = "Set a password (optional):";
+    if (pwHint)  pwHint.textContent  = "Protects your save from others. Leave blank to skip.";
   }
+
+  if (pwWrap) pwWrap.style.display = "block";
+  if (passwordInput) passwordInput.focus();
+  // Do NOT call proceedToGame() here — wait for Pass 2 (next submit)
 }
 
 // ── CHARACTER SELECT ───────────────────────────────────────────
