@@ -314,38 +314,189 @@ function sellAllCoins(coinId) {
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
 
-// Switches between the Stocks tab and the Crypto tab in the right panel.
+// Switches between the Stocks, Crypto, and Portfolio tabs in the right panel.
 // Called by onclick on the tab buttons in index.html.
-// 'tab' should be either "stocks" or "crypto".
+// 'tab' should be "stocks", "crypto", or "portfolio".
 function switchTab(tab) {
-  const stocksList = document.getElementById("stocks-list");
-  const cryptoList = document.getElementById("crypto-list");
-  const tabStocks  = document.getElementById("tab-stocks");
-  const tabCrypto  = document.getElementById("tab-crypto");
+  const stocksList    = document.getElementById("stocks-list");
+  const cryptoList    = document.getElementById("crypto-list");
+  const portfolioList = document.getElementById("portfolio-list");
+  const tabStocks     = document.getElementById("tab-stocks");
+  const tabCrypto     = document.getElementById("tab-crypto");
+  const tabPortfolio  = document.getElementById("tab-portfolio");
 
-  if (!stocksList || !cryptoList) return; // elements not in DOM yet
+  if (!stocksList || !cryptoList) return;
+
+  // Hide all, deactivate all
+  stocksList.style.display    = "none";
+  cryptoList.style.display    = "none";
+  if (portfolioList) portfolioList.style.display = "none";
+  if (tabStocks)    tabStocks.classList.remove("tab-active");
+  if (tabCrypto)    tabCrypto.classList.remove("tab-active");
+  if (tabPortfolio) tabPortfolio.classList.remove("tab-active");
 
   if (tab === "stocks") {
-    // Show stocks content, hide crypto content
     stocksList.style.display = "";
-    cryptoList.style.display = "none";
-
-    // Highlight the stocks tab button
     if (tabStocks) tabStocks.classList.add("tab-active");
-    if (tabCrypto) tabCrypto.classList.remove("tab-active");
 
-  } else {
-    // Show crypto content, hide stocks content
-    stocksList.style.display = "none";
+  } else if (tab === "crypto") {
     cryptoList.style.display = "";
-
-    // Highlight the crypto tab button
-    if (tabStocks) tabStocks.classList.remove("tab-active");
     if (tabCrypto) tabCrypto.classList.add("tab-active");
-
-    // Render fresh content when the player switches to this tab
     renderCrypto();
+
+  } else if (tab === "portfolio") {
+    if (portfolioList) portfolioList.style.display = "";
+    if (tabPortfolio)  tabPortfolio.classList.add("tab-active");
+    renderPortfolio();
   }
+}
+
+// ── PORTFOLIO TAB ─────────────────────────────────────────────
+
+function renderPortfolio() {
+  const container = document.getElementById("portfolio-list");
+  if (!container) return;
+
+  // ── Gather stock holdings ──
+  const stockHoldings = [];
+  let totalStockValue    = 0;
+  let totalStockInvested = 0;
+  let totalStockDivSec   = 0;
+
+  STOCKS.forEach(stock => {
+    const shares = gameState.ownedStocks[stock.id] || 0;
+    if (shares <= 0) return;
+    const price   = gameState.stockPrices[stock.id] || stock.basePrice;
+    const spent   = gameState.stockSpent[stock.id]  || 0;
+    const value   = shares * price;
+    const pnl     = value - spent;
+    const pnlPct  = spent > 0 ? (pnl / spent) * 100 : 0;
+    const divSec  = shares * stock.dividendPerShare;
+    totalStockValue    += value;
+    totalStockInvested += spent;
+    totalStockDivSec   += divSec;
+    stockHoldings.push({ stock, shares, price, spent, value, pnl, pnlPct, divSec });
+  });
+
+  // ── Gather crypto holdings ──
+  const cryptoHoldings = [];
+  let totalCryptoValue    = 0;
+  let totalCryptoInvested = 0;
+  let totalCryptoDivSec   = 0;
+
+  CRYPTOS.forEach(coin => {
+    const coins = gameState.ownedCoins[coin.id] || 0;
+    if (coins <= 0) return;
+    const price   = gameState.cryptoPrices[coin.id] || coin.basePrice;
+    const spent   = gameState.coinSpent[coin.id]    || 0;
+    const value   = coins * price;
+    const pnl     = value - spent;
+    const pnlPct  = spent > 0 ? (pnl / spent) * 100 : 0;
+    const divSec  = coins * coin.dividendPerCoin;
+    totalCryptoValue    += value;
+    totalCryptoInvested += spent;
+    totalCryptoDivSec   += divSec;
+    cryptoHoldings.push({ coin, coins, price, spent, value, pnl, pnlPct, divSec });
+  });
+
+  const totalValue    = totalStockValue    + totalCryptoValue;
+  const totalInvested = totalStockInvested + totalCryptoInvested;
+  const totalPnl      = totalValue - totalInvested;
+  const totalPnlPct   = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
+  const totalDivSec   = totalStockDivSec  + totalCryptoDivSec;
+
+  const nothingOwned = stockHoldings.length === 0 && cryptoHoldings.length === 0;
+
+  if (nothingOwned) {
+    container.innerHTML = `
+      <div style="padding:2rem; text-align:center; color:#9e9e9e; font-size:0.9rem;">
+        📭 No holdings yet.<br>Buy some stocks or crypto to see your portfolio here!
+      </div>`;
+    return;
+  }
+
+  // ── Summary card ──
+  const pnlColor  = totalPnl >= 0 ? "#2e7d32" : "#c62828";
+  const pnlArrow  = totalPnl >= 0 ? "▲" : "▼";
+  const pnlSign   = totalPnl >= 0 ? "+" : "";
+
+  let html = `
+    <div class="portfolio-summary">
+      <div class="portfolio-summary-title">📊 Portfolio Overview</div>
+      <div class="portfolio-summary-grid">
+        <div class="portfolio-stat">
+          <span class="portfolio-stat-label">Total Value</span>
+          <span class="portfolio-stat-value">${formatMoney(totalValue)}</span>
+        </div>
+        <div class="portfolio-stat">
+          <span class="portfolio-stat-label">Total Invested</span>
+          <span class="portfolio-stat-value">${formatMoney(totalInvested)}</span>
+        </div>
+        <div class="portfolio-stat">
+          <span class="portfolio-stat-label">Overall P&amp;L</span>
+          <span class="portfolio-stat-value" style="color:${pnlColor};">
+            ${pnlArrow} ${pnlSign}${formatMoney(Math.abs(totalPnl))}
+            <span style="font-size:0.8em;">(${pnlSign}${totalPnlPct.toFixed(1)}%)</span>
+          </span>
+        </div>
+        <div class="portfolio-stat">
+          <span class="portfolio-stat-label">Dividends/sec</span>
+          <span class="portfolio-stat-value" style="color:#2e7d32;">${formatMoney(totalDivSec)}/s</span>
+        </div>
+      </div>
+    </div>`;
+
+  // ── Stock rows ──
+  if (stockHoldings.length > 0) {
+    html += `<div class="portfolio-section-label">📈 Stocks</div>`;
+    stockHoldings.forEach(({ stock, shares, price, spent, value, pnl, pnlPct, divSec }) => {
+      const color = pnl >= 0 ? "#2e7d32" : "#c62828";
+      const arrow = pnl >= 0 ? "▲" : "▼";
+      const sign  = pnl >= 0 ? "+" : "";
+      html += `
+        <div class="portfolio-row">
+          <div class="portfolio-row-left">
+            <span class="portfolio-row-emoji">${stock.emoji}</span>
+            <div>
+              <div class="portfolio-row-name">${stock.name} <span class="portfolio-row-ticker">${stock.ticker}</span></div>
+              <div class="portfolio-row-sub">${shares} share${shares !== 1 ? "s" : ""} · ${formatMoney(divSec)}/s dividends</div>
+            </div>
+          </div>
+          <div class="portfolio-row-right">
+            <div class="portfolio-row-value">${formatMoney(value)}</div>
+            <div class="portfolio-row-pnl" style="color:${color};">${arrow} ${sign}${formatMoney(Math.abs(pnl))} (${sign}${pnlPct.toFixed(1)}%)</div>
+            <div class="portfolio-row-sub">@ ${formatStockPrice(price)} · avg cost ${formatStockPrice(shares > 0 ? spent / shares : 0)}</div>
+          </div>
+        </div>`;
+    });
+  }
+
+  // ── Crypto rows ──
+  if (cryptoHoldings.length > 0) {
+    html += `<div class="portfolio-section-label">🪙 Crypto</div>`;
+    cryptoHoldings.forEach(({ coin, coins, price, spent, value, pnl, pnlPct, divSec }) => {
+      const color = pnl >= 0 ? "#2e7d32" : "#c62828";
+      const arrow = pnl >= 0 ? "▲" : "▼";
+      const sign  = pnl >= 0 ? "+" : "";
+      html += `
+        <div class="portfolio-row">
+          <div class="portfolio-row-left">
+            <span class="portfolio-row-emoji">${coin.emoji}</span>
+            <div>
+              <div class="portfolio-row-name">${coin.name} <span class="portfolio-row-ticker">${coin.ticker}</span></div>
+              <div class="portfolio-row-sub">${coins} coin${coins !== 1 ? "s" : ""} · ${formatMoney(divSec)}/s dividends</div>
+            </div>
+          </div>
+          <div class="portfolio-row-right">
+            <div class="portfolio-row-value">${formatMoney(value)}</div>
+            <div class="portfolio-row-pnl" style="color:${color};">${arrow} ${sign}${formatMoney(Math.abs(pnl))} (${sign}${pnlPct.toFixed(1)}%)</div>
+            <div class="portfolio-row-sub">@ ${formatCoinPrice(price)} · avg cost ${formatCoinPrice(coins > 0 ? spent / coins : 0)}</div>
+          </div>
+        </div>`;
+    });
+  }
+
+  container.innerHTML = html;
 }
 
 // ── PORTFOLIO STATS ───────────────────────────────────────────

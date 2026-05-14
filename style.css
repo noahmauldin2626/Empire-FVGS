@@ -1850,6 +1850,76 @@ h1, h2, h3, .panel-title {
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
+/* ── UPDATE 5.8.1: PORTFOLIO TAB ─────────────────────────── */
+.portfolio-summary {
+  background: linear-gradient(135deg, #1b5e20, #2e7d32);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  margin: 0.6rem 0.6rem 0;
+  color: #fff;
+}
+.portfolio-summary-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  color: #ffd700;
+  margin-bottom: 0.6rem;
+}
+.portfolio-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+}
+.portfolio-stat { display: flex; flex-direction: column; }
+.portfolio-stat-label {
+  font-size: 0.72rem;
+  color: #a5d6a7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.portfolio-stat-value {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #fff;
+}
+.portfolio-section-label {
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.9rem;
+  color: #2e7d32;
+  padding: 0.6rem 0.8rem 0.2rem;
+  border-bottom: 1px solid #e8f5e9;
+  margin-top: 0.4rem;
+}
+.portfolio-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.82rem;
+}
+.portfolio-row:last-child { border-bottom: none; }
+.portfolio-row-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.portfolio-row-emoji { font-size: 1.4rem; line-height: 1; margin-top: 0.1rem; }
+.portfolio-row-name { font-weight: 800; color: #1a2e1a; }
+.portfolio-row-ticker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #757575;
+  background: #f1f8e9;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin-left: 3px;
+}
+.portfolio-row-right { text-align: right; }
+.portfolio-row-value { font-weight: 800; color: #1a2e1a; font-size: 0.88rem; }
+.portfolio-row-pnl { font-weight: 700; font-size: 0.78rem; }
+.portfolio-row-sub { font-size: 0.72rem; color: #9e9e9e; margin-top: 1px; }
+
 /* ── UPDATE 5.8: THEME TOGGLE ─────────────────────────────── */
 .theme-toggle-wrap { display: flex; gap: 0.4rem; }
 .theme-btn {
@@ -1999,3 +2069,10 @@ body.theme-dark #money-btn {
 }
 body.theme-dark .theme-btn { background: #0e1e0e; color: #81c784; border-color: #2e5c2e; }
 body.theme-dark .theme-btn-active { background: #1e5c1e; color: #fff; border-color: #2e7d32; }
+body.theme-dark .portfolio-summary { background: linear-gradient(135deg, #0d200d, #152815); }
+body.theme-dark .portfolio-section-label { color: #66bb6a; border-bottom-color: #1e3a1e; }
+body.theme-dark .portfolio-row { border-bottom-color: #1a3a1a; }
+body.theme-dark .portfolio-row-name { color: #d4e8d4; }
+body.theme-dark .portfolio-row-ticker { background: #1a3a1a; color: #81c784; }
+body.theme-dark .portfolio-row-value { color: #d4e8d4; }
+body.theme-dark .portfolio-row-sub { color: #4a7a4a; }
