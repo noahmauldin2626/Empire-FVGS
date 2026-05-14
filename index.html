@@ -17,7 +17,7 @@
 <div id="username-screen">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.8.1 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.8.2 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -88,7 +88,7 @@
 <div id="intro-screen" style="display:none;">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.8.1 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.8.2 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -172,7 +172,7 @@
   <div class="modal-inner modal-changelog">
 
     <div class="modal-header">
-      <span>📋 What's New — Update 5.8.1</span>
+      <span>📋 What's New — Update 5.8.2</span>
       <!-- X button calls dismissChangelog() in game.js -->
       <button class="modal-close-btn" onclick="dismissChangelog()">✕</button>
     </div>
@@ -180,11 +180,10 @@
     <div class="modal-body">
       <p class="changelog-subtitle">by Flaco's Video Game Studio</p>
       <ul class="changelog-list">
-        <li><strong>Lifestyle Modal</strong> — New Lifestyle button in the top bar. Buy vacations, hire staff, and book experiences. All purely for fun. None of it makes money. That is the point.</li>
-        <li><strong>Silly Shop</strong> — Buy completely absurd things with your fortune. Gold toilet, cloned dinosaur, emotional support accountant, and more. Uncle Funds has reactions to all of them.</li>
-        <li><strong>Trophy Room</strong> — A collapsible panel in the center column showing everything you own that does not make money. Cars, home, vacations, lifestyle purchases, and silly items all in one place.</li>
-        <li><strong>Light Mode</strong> — Toggle between dark and light themes in Settings under Appearance. Your preference is saved automatically.</li>
-        <li><strong>Portfolio Tab</strong> — New tab next to Crypto. See all your stocks and crypto in one place — total value, amount invested, P&amp;L, and dividends per second for each holding.</li>
+        <li><strong>Portfolio Tab</strong> — New Portfolio tab in the market panel shows all your stock and crypto holdings in one place. See total value, total invested, overall profit or loss, dividends per second, and individual position details. Updates live as prices move.</li>
+        <li><strong>Lifestyle and Silly Shop</strong> — Buy vacations, hire staff, book experiences, and spend money on completely absurd items. All vanity. All worth it.</li>
+        <li><strong>Trophy Room</strong> — Collapsible panel showing everything you own that makes zero money. Cars, home, lifestyle, and silly purchases.</li>
+        <li><strong>Light and Dark Mode</strong> — Toggle in Settings under Appearance. Saved automatically.</li>
       </ul>
       <button class="btn btn-buy" onclick="dismissChangelog()"
               style="width:100%; margin-top:1rem;">
@@ -424,15 +423,9 @@
       <!-- Tab buttons replace the old single-line header title -->
       <div class="panel-header tab-header"
            data-locked-reason="Earn $2,000 total to unlock the market!">
-        <button class="tab-btn tab-active" id="tab-stocks" onclick="switchTab('stocks')">
-          📈 Stocks
-        </button>
-        <button class="tab-btn" id="tab-crypto" onclick="switchTab('crypto')">
-          🪙 Crypto
-        </button>
-        <button class="tab-btn" id="tab-portfolio" onclick="switchTab('portfolio')">
-          📊 Portfolio
-        </button>
+        <button class="tab-btn tab-active" id="tab-stocks" onclick="switchTab('stocks')">Stocks</button>
+        <button class="tab-btn" id="tab-crypto" onclick="switchTab('crypto')">Crypto</button>
+        <button class="tab-btn" id="tab-portfolio" onclick="switchTab('portfolio')">Portfolio</button>
       </div>
 
       <div class="panel-body">

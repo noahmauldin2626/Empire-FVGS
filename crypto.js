@@ -164,6 +164,12 @@ function fluctuateCryptoPrices() {
 
   // Refresh the crypto tab so the player sees updated prices
   renderCrypto();
+
+  // If Portfolio tab is active, keep it fresh too
+  const portfolioEl = document.getElementById("portfolio-list");
+  if (portfolioEl && portfolioEl.style.display !== "none") {
+    renderPortfolio();
+  }
 }
 
 // ── INCOME CALCULATIONS ───────────────────────────────────────
@@ -409,8 +415,13 @@ function renderPortfolio() {
 
   if (nothingOwned) {
     container.innerHTML = `
-      <div style="padding:2rem; text-align:center; color:#9e9e9e; font-size:0.9rem;">
-        📭 No holdings yet.<br>Buy some stocks or crypto to see your portfolio here!
+      <div class="portfolio-empty">
+        <div class="portfolio-empty-icon">📭</div>
+        <div class="portfolio-empty-title">No Holdings Yet</div>
+        <div class="portfolio-empty-msg">
+          Buy stocks or crypto and they will appear here
+          with live P&amp;L tracking.
+        </div>
       </div>`;
     return;
   }

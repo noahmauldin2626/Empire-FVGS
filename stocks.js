@@ -129,6 +129,12 @@ function fluctuateStockPrices() {
 
   // Refresh the stocks panel so the player sees the new prices
   renderStocks();
+
+  // If Portfolio tab is active, keep it fresh too
+  const portfolioEl = document.getElementById("portfolio-list");
+  if (portfolioEl && portfolioEl.style.display !== "none") {
+    renderPortfolio();
+  }
 }
 
 // ── INCOME CALCULATIONS ───────────────────────────────────────
