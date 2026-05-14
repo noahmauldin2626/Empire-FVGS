@@ -33,7 +33,7 @@
 // Update this string each time you ship a new update.
 // The changelog modal auto-shows once when this doesn't match
 // what's stored in gameState.lastSeenChangelog.
-const CHANGELOG_VERSION = "5_6_5";
+const CHANGELOG_VERSION = "5_6_7";
 
 // ── ACTIVE USERNAME ────────────────────────────────────────────
 // Holds the name the player typed on the username screen.
@@ -88,7 +88,7 @@ const gameState = {
   // Tracks total cash spent on each stock/coin across all buy transactions.
   // Used to calculate profit/loss on the stats display in each card.
   // Keys are asset IDs (e.g. "pineapple", "bytecoin").
-  // Values are cumulative dollar amounts spent (never decremented on sell).
+  // Values are cumulative dollar amounts spent, reduced proportionally on sell.
   stockSpent: {},        // { stockId: totalCashSpent }
   coinSpent:  {},        // { coinId:  totalCashSpent }
 

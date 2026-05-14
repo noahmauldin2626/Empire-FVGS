@@ -17,7 +17,7 @@
 <div id="username-screen">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.5 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.7 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -88,7 +88,7 @@
 <div id="intro-screen" style="display:none;">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.5 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.7 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -172,7 +172,7 @@
   <div class="modal-inner modal-changelog">
 
     <div class="modal-header">
-      <span>📋 What's New — Update 5.6.5</span>
+      <span>📋 What's New — Update 5.6.7</span>
       <!-- X button calls dismissChangelog() in game.js -->
       <button class="modal-close-btn" onclick="dismissChangelog()">✕</button>
     </div>
@@ -181,27 +181,22 @@
       <p class="changelog-subtitle">by Flaco's Video Game Studio</p>
       <ul class="changelog-list">
         <li>
+          <strong>Bug Fix: Break-Even Price</strong> —
+          The break-even price on stocks and crypto was inflating
+          incorrectly after large buys and partial sells. Cost basis
+          now reduces proportionally when you sell, keeping the
+          break-even figure accurate at all times.
+        </li>
+        <li>
+          <strong>Mouse Hold = Power Click</strong> —
+          Holding the Click to Earn button activates Power Click,
+          just like holding Enter or Space. Quick taps still work
+          as normal single clicks with no cooldown penalty.
+        </li>
+        <li>
           <strong>Login: Persistent Password</strong> —
-          The password field is now always visible on the landing page.
-          Your password is saved in your browser so returning players
-          can press Enter straight away — no re-typing needed.
-        </li>
-        <li>
-          <strong>Bug Fix: Lock Tooltips</strong> —
-          Hovering over unlocked panels and cards no longer incorrectly
-          shows the lock tooltip. Tooltips now only appear on content
-          that is genuinely still locked.
-        </li>
-        <li>
-          <strong>Bills System</strong> —
-          Operating costs on all owned assets are deducted each second.
-          Properties, businesses, yachts, airlines, cars, and your home
-          all have running costs shown in red in the top bar.
-        </li>
-        <li>
-          <strong>Expanded Rich List</strong> —
-          Five new Apex Tier rivals (A1-A5) added above the Super Tier.
-          The new win condition is defeating THE ARCHITECT at $500 Billion.
+          The password field is always visible on the landing page
+          and saved in your browser — returning players just press Enter.
         </li>
       </ul>
       <button class="btn btn-buy" onclick="dismissChangelog()"

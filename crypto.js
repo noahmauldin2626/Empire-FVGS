@@ -263,6 +263,13 @@ function sellCoins(coinId, amount) {
 
   gameState.cash        += proceeds;
   gameState.totalEarned += proceeds; // selling crypto counts as earnings
+
+  // Reduce cost basis proportionally so break-even stays correct after partial sells
+  const spent = gameState.coinSpent[coinId] || 0;
+  if (spent > 0 && coinsOwned > 0) {
+    gameState.coinSpent[coinId] = spent * (coinsOwned - coinsToSell) / coinsOwned;
+  }
+
   gameState.ownedCoins[coinId] = coinsOwned - coinsToSell;
 
   recalculateStats();
@@ -294,6 +301,7 @@ function sellAllCoins(coinId) {
   gameState.cash        += proceeds;
   gameState.totalEarned += proceeds;
   gameState.ownedCoins[coinId] = 0;
+  gameState.coinSpent[coinId]  = 0; // full sell wipes cost basis
 
   recalculateStats();
   saveGame();

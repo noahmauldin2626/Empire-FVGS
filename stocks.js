@@ -240,6 +240,13 @@ function sellStockAmount(stockId, amount) {
 
   gameState.cash        += proceeds;
   gameState.totalEarned += proceeds;
+
+  // Reduce cost basis proportionally so break-even stays correct after partial sells
+  const spent = gameState.stockSpent[stockId] || 0;
+  if (spent > 0 && sharesOwned > 0) {
+    gameState.stockSpent[stockId] = spent * (sharesOwned - sharesToSell) / sharesOwned;
+  }
+
   gameState.ownedStocks[stockId] = sharesOwned - sharesToSell;
 
   recalculateStats();
@@ -273,6 +280,7 @@ function sellAllStock(stockId) {
   gameState.cash        += proceeds;
   gameState.totalEarned += proceeds;
   gameState.ownedStocks[stockId] = 0;
+  gameState.stockSpent[stockId]  = 0; // full sell wipes cost basis
 
   recalculateStats();
   saveGame();
