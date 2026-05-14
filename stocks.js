@@ -221,6 +221,11 @@ function buyStockMax(stockId) {
   }
 
   buyStockAmount(stockId, maxShares);
+
+  const portfolioEl = document.getElementById("portfolio-list");
+  if (portfolioEl && portfolioEl.style.display !== "none") {
+    renderPortfolio();
+  }
 }
 
 // ── SELL FUNCTIONS ────────────────────────────────────────────
@@ -294,6 +299,12 @@ function sellAllStock(stockId) {
   updateUI();
 
   showToast(`Sold all ${shares} shares for ${formatMoney(proceeds)}! 🎉`);
+
+  const portfolioEl = document.getElementById("portfolio-list");
+  if (portfolioEl && portfolioEl.style.display !== "none") {
+    renderPortfolio();
+  }
+
   return true;
 }
 

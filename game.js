@@ -33,7 +33,7 @@
 // Update this string each time you ship a new update.
 // The changelog modal auto-shows once when this doesn't match
 // what's stored in gameState.lastSeenChangelog.
-const CHANGELOG_VERSION = "5_8_2";
+const CHANGELOG_VERSION = "5_9";
 
 // ── ACTIVE USERNAME ────────────────────────────────────────────
 // Holds the name the player typed on the username screen.
@@ -118,7 +118,7 @@ const gameState = {
   managerTimerAccumulator: 0,   // seconds accumulated toward next auto-tap
 
   // --- Rich List ---
-  currentRank:    11,    // 11 = unranked (below #10)
+  currentRank:    51,    // 51 = unranked (below rank 50)
   ranksAchieved:  [],    // which rank numbers have already triggered dialogue
 
   // --- Tracking ---
@@ -142,6 +142,9 @@ const gameState = {
 
   // --- Theme (Update 5.8) ---
   theme: "dark",   // "dark" or "light"
+
+  // --- Legacy Mode (Update 5.9) ---
+  legacyMode: false,  // true when player beats rank 1 and chooses "Keep Going"
 };
 
 // ── POWER CLICK STATE ──────────────────────────────────────────
@@ -150,7 +153,7 @@ const gameState = {
 let powerClickActive    = false; // true while the key is held and firing
 let powerClickCooldown  = false; // true during the 3-sec cooldown
 let powerClickInterval  = null;  // the setInterval handle for rapid clicks
-let powerClickTimeout   = null;  // the setTimeout handle for the 10-sec limit
+let powerClickTimeout   = null;  // the setTimeout handle for the 15-sec limit
 let powerClickCoolTimer = null;  // the setTimeout handle for cooldown expiry
 let mouseHoldTimer      = null;  // setTimeout before mouse-hold activates Power Click
 let mouseHoldActivated  = false; // true if mouse hold triggered Power Click this press
@@ -174,7 +177,7 @@ function formatMoney(amount) {
 // Each username gets a unique key so saves never collide.
 // Example: username "flaco" → key "empire_save_v1_flaco"
 function getSaveKey() {
-  return "empire_save_v1_" + (activeUsername || "default");
+  return "empire_save_v2_" + (activeUsername || "default");
 }
 
 // ── SAVE INDICATOR ─────────────────────────────────────────────
@@ -318,6 +321,9 @@ function fillMissingFields() {
   if (gameState.hasSeenFirstVacation  === undefined)   gameState.hasSeenFirstVacation   = false;
   if (!gameState.theme)                                gameState.theme                  = "dark";
 
+  // --- Fields added in Update 5.9 ---
+  if (gameState.legacyMode === undefined) gameState.legacyMode = false;
+
   // Update 5.5 guard — seeds prices for any NEW coins added to CRYPTOS
   // that are missing from an existing save's cryptoPrices object.
   // Runs for returning players whose saves pre-date the new coins.
@@ -442,7 +448,7 @@ function playAgain() {
     passiveIncome: 0, playerName: "", playerGender: "",
     chapter: 0, ownedProperties: {}, ownedStocks: {},
     ownedBusinesses: {}, stockPrices: {}, managerLevel: 0,
-    managerTimerAccumulator: 0, currentRank: 11,
+    managerTimerAccumulator: 0, currentRank: 51,
     ranksAchieved: [], startTime: null, totalClicks: 0,
     hasSeenIntro: false, totalManagerSalaryPaid: 0,
     // Update 3 keys:
@@ -479,11 +485,24 @@ function playAgain() {
     hasSeenFirstSilly:     false,
     hasSeenFirstVacation:  false,
     theme:                 "dark",
+
+    // Update 5.9:
+    legacyMode: false,
   });
 
   document.getElementById("win-screen").style.display   = "none";
   document.getElementById("game-screen").style.display  = "none";
   document.getElementById("intro-screen").style.display = "flex";
+}
+
+function keepGoing() {
+  const winScreen = document.getElementById("win-screen");
+  if (winScreen) winScreen.style.display = "none";
+  gameState.legacyMode = true;
+  saveGame();
+  const banner = document.getElementById("legacy-banner");
+  if (banner) banner.style.display = "flex";
+  triggerDialogue("legacy_mode");
 }
 
 // ── STATS RECALCULATION ────────────────────────────────────────
@@ -496,14 +515,19 @@ function recalculateStats() {
   const propClickBonus     = calculatePropertyClickBonus();
   const businessClickBonus = calculateBusinessClickBonus();
   const yachtClickBonus    = calculateYachtBusinessClickBonus(); // Update 4
-  gameState.clickValue = 1 + propClickBonus + businessClickBonus + yachtClickBonus;
-
   // --- Sector Manager Multipliers (Update 5.6) ---
   const mProp    = getSectorMultiplier("real_estate");
   const mMarket  = getSectorMultiplier("market");
   const mBiz     = getSectorMultiplier("business");
   const mAirline = getSectorMultiplier("airline");
   const mYacht   = getSectorMultiplier("yacht");
+
+  // Apply sector multipliers to click value (Bug Fix 5.9)
+  // yachtClickBonus uses mBiz — Yacht Empire is categorised under the business sector
+  gameState.clickValue = 1
+    + (propClickBonus     * mProp)
+    + (businessClickBonus * mBiz)
+    + (yachtClickBonus    * mBiz);
 
   // --- Passive Income Per Second (multiplied by sector managers) ---
   const propIncome       = calculatePropertyIncome()       * mProp;
@@ -669,18 +693,19 @@ function unlockChapter(chapterNum) {
 
 // ── RICH LIST RANK CHECKS ──────────────────────────────────────
 
+// Update 5.9: Milestone-only dialogues — 50 rivals, only 10 milestones fire.
 const RANK_DIALOGUES = {
-  10: "rank_10", 9: "rank_9", 8: "rank_8", 7: "rank_7",
-  6: "rank_6",   5: "rank_5", 4: "rank_4", 3: "rank_3",
-  2: "rank_2",   0: "win",
-  // Update 4: Super-Tier ranks use string keys (JS coerces negative ints to strings)
-  "-1": "rank_-1", "-2": "rank_-2",
-  "-3": "rank_-3", "-4": "rank_-4",
-  // Update 5.6.4: THE MONEY GHOST milestone + Apex Tier ranks A1–A4
-  // (beating rank -10 / THE ARCHITECT returns rank 0 = "win" — handled above)
-  "-5": "rank_-5",
-  "-6": "rank_-6", "-7": "rank_-7",
-  "-8": "rank_-8", "-9": "rank_-9"
+  50: "rank_50",
+  40: "rank_40",
+  30: "rank_30",
+  20: "rank_20",
+  15: "rank_15",
+  10: "rank_10",
+  5:  "rank_5",
+  4:  "rank_4",
+  3:  "rank_3",
+  2:  "rank_2",
+  0:  "win"
 };
 
 function checkRichListRank() {
@@ -694,7 +719,7 @@ function checkRichListRank() {
       if (RANK_DIALOGUES[newRank]) triggerDialogue(RANK_DIALOGUES[newRank]);
     }
 
-    if (newRank === 0) setTimeout(showWinScreen, 3000);
+    if (newRank === 0 && !gameState.legacyMode) setTimeout(showWinScreen, 3000);
 
     renderRichList();
   }
@@ -744,10 +769,10 @@ function startPowerClick() {
     }
   }, 100);
 
-  // Auto-stop after 10 seconds
+  // Auto-stop after 15 seconds
   powerClickTimeout = setTimeout(function () {
     stopPowerClick(true);
-  }, 10000);
+  }, 15000);
 }
 
 function stopPowerClick(triggerCooldown) {
@@ -822,10 +847,9 @@ function updateUI() {
   setText("display-bills", "−" + formatMoney(bills) + "/sec");
 
   const rank = gameState.currentRank;
-  const rankDisplay = rank === 11 ? "Unranked"
-    : rank === 0 ? "👑 #1!"
-    : rank < -5  ? "A" + Math.abs(rank + 5)  // Update 5.6.4: Apex-Tier A1–A5
-    : rank < 0   ? "S" + Math.abs(rank)       // Update 4: Super-Tier S1–S5
+  const rankDisplay =
+    rank === 51 || rank > 50 ? "Unranked"
+    : rank === 0             ? "👑 #1!"
     : "#" + rank;
   setText("display-rank", rankDisplay);
 
@@ -919,7 +943,7 @@ async function deletePassword(username) {
 }
 
 async function deleteAccount(username) {
-  localStorage.removeItem("empire_save_v1_" + username);
+  localStorage.removeItem("empire_save_v2_" + username);
   localStorage.removeItem("empire_password_" + username);
   if (window.db && username) {
     try {
@@ -1236,6 +1260,12 @@ function startGame() {
   // Update 5.1: initialise Power Click indicator to "ready" state
   updatePowerClickUI();
   applyTheme(gameState.theme);
+
+  // Update 5.9: restore legacy banner if player is in legacy mode
+  const legacyBanner = document.getElementById("legacy-banner");
+  if (legacyBanner) {
+    legacyBanner.style.display = gameState.legacyMode ? "flex" : "none";
+  }
 
   // ── Game loops ───────────────────────────────────────────────
   setInterval(mainGameLoop, 1000);             // main loop: every 1 second

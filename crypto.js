@@ -247,6 +247,11 @@ function buyCoinMax(coinId) {
   }
 
   buyCoins(coinId, maxCoins);
+
+  const portfolioEl = document.getElementById("portfolio-list");
+  if (portfolioEl && portfolioEl.style.display !== "none") {
+    renderPortfolio();
+  }
 }
 
 // ── SELL FUNCTIONS ────────────────────────────────────────────
@@ -315,6 +320,12 @@ function sellAllCoins(coinId) {
   updateUI();
 
   showToast(`Sold all ${coins} coins for ${formatMoney(proceeds)}! 🎉`);
+
+  const portfolioEl = document.getElementById("portfolio-list");
+  if (portfolioEl && portfolioEl.style.display !== "none") {
+    renderPortfolio();
+  }
+
   return true;
 }
 
@@ -478,6 +489,12 @@ function renderPortfolio() {
             <div class="portfolio-row-pnl" style="color:${color};">${arrow} ${sign}${formatMoney(Math.abs(pnl))} (${sign}${pnlPct.toFixed(1)}%)</div>
             <div class="portfolio-row-sub">@ ${formatStockPrice(price)} · avg cost ${formatStockPrice(shares > 0 ? spent / shares : 0)}</div>
           </div>
+          <div class="portfolio-row-actions">
+            <button class="btn stock-qty-btn btn-buy-max"
+                    onclick="buyStockMax('${stock.id}')">Max Buy</button>
+            <button class="btn stock-qty-btn btn-sell-all"
+                    onclick="sellAllStock('${stock.id}')">Max Sell</button>
+          </div>
         </div>`;
     });
   }
@@ -502,6 +519,12 @@ function renderPortfolio() {
             <div class="portfolio-row-value">${formatMoney(value)}</div>
             <div class="portfolio-row-pnl" style="color:${color};">${arrow} ${sign}${formatMoney(Math.abs(pnl))} (${sign}${pnlPct.toFixed(1)}%)</div>
             <div class="portfolio-row-sub">@ ${formatCoinPrice(price)} · avg cost ${formatCoinPrice(coins > 0 ? spent / coins : 0)}</div>
+          </div>
+          <div class="portfolio-row-actions">
+            <button class="btn stock-qty-btn btn-buy-max"
+                    onclick="buyCoinMax('${coin.id}')">Max Buy</button>
+            <button class="btn stock-qty-btn btn-sell-all"
+                    onclick="sellAllCoins('${coin.id}')">Max Sell</button>
           </div>
         </div>`;
     });
