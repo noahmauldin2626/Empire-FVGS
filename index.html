@@ -41,15 +41,15 @@
       Letters and numbers only · Max 20 characters · Same name = same save on any device ☁️
     </div>
 
-    <!-- Password field — hidden until username is submitted once.
-         JS shows/hides this and sets the label text based on
-         whether the returning player has a saved password.     -->
-    <div id="password-field-wrap" style="display:none; width:100%; margin-top:0.8rem;">
-      <div class="username-label" id="password-label">Password:</div>
+    <!-- Password field — always visible alongside the username field.
+         Pre-filled from localStorage on returning visits so the
+         player can just press Enter to jump straight back in.   -->
+    <div id="password-field-wrap" style="width:100%; margin-top:0.8rem;">
+      <div class="username-label" id="password-label">🔑 Password:</div>
       <input
         type="password"
         id="password-input"
-        placeholder="Enter password"
+        placeholder="New player? Set a password. Returning? Enter yours."
         maxlength="50"
         autocomplete="current-password"
         style="width:100%; padding:0.6rem 0.9rem; border:2px solid rgba(255,215,0,0.5);
@@ -57,7 +57,7 @@
                font-family:inherit; font-size:1rem; text-align:center; outline:none;"
       />
       <div id="password-hint" class="username-hint" style="font-size:0.8rem;">
-        Choose a password to protect your save.
+        Your password is saved so you only need to press Enter next time.
       </div>
     </div>
 
@@ -180,6 +180,12 @@
     <div class="modal-body">
       <p class="changelog-subtitle">by Flaco's Video Game Studio</p>
       <ul class="changelog-list">
+        <li>
+          <strong>Login: Persistent Password</strong> —
+          The password field is now always visible on the landing page.
+          Your password is saved in your browser so returning players
+          can press Enter straight away — no re-typing needed.
+        </li>
         <li>
           <strong>Bug Fix: Lock Tooltips</strong> —
           Hovering over unlocked panels and cards no longer incorrectly

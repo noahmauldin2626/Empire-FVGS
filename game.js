@@ -41,15 +41,11 @@ const CHANGELOG_VERSION = "5_6_5";
 // Every save/load uses this name so each player has their own slot.
 let activeUsername = "";
 
-// ── LOGIN TWO-PASS STATE ────────────────────────────────────────
-// handleUsernameSubmit() uses a two-pass design:
-//   Pass 1 — loads save + password from Firebase, shows the password field, stops.
-//   Pass 2 — reads what the player typed, validates or saves the password, proceeds.
-// These three variables hold the data between passes so the async results
-// from Pass 1 are still available when Pass 2 runs.
-let loginPending = false;   // true once Pass 1 has shown the password field
-let loginHasSave = false;   // whether an existing save was found (cached from Pass 1)
-let loginSavedPw = null;    // the stored password string, or null if none (cached from Pass 1)
+// ── LOGIN STATE ─────────────────────────────────────────────────
+// handleUsernameSubmit() is single-pass: username + password are
+// submitted together, Firebase is checked once, and the player
+// proceeds immediately. The password is persisted in localStorage
+// so returning players have the field pre-filled on next visit.
 
 // ── GAME STATE ─────────────────────────────────────────────────
 // This one object holds ALL the live data for the current game.
@@ -1017,52 +1013,8 @@ async function handleUsernameSubmit() {
   }
 
   const passwordInput = document.getElementById("password-input");
-  const pwWrap        = document.getElementById("password-field-wrap");
-  const pwLabel       = document.getElementById("password-label");
-  const pwHint        = document.getElementById("password-hint");
+  const enteredPw     = passwordInput ? passwordInput.value.trim() : "";
 
-  // ── PASS 2: password field already visible — act on what was typed ──
-  if (loginPending) {
-    const enteredPw = passwordInput ? passwordInput.value.trim() : "";
-
-    if (loginHasSave && loginSavedPw) {
-      // Scenario C — returning player WITH a saved password: require it
-      if (!enteredPw) {
-        showUsernameError("This account has a password. Please enter it below.");
-        return;
-      }
-      if (enteredPw !== loginSavedPw) {
-        showUsernameError("Incorrect password. Try again.");
-        if (passwordInput) { passwordInput.value = ""; passwordInput.focus(); }
-        return;
-      }
-      // Correct — fall through to proceed
-
-    } else if (loginHasSave && !loginSavedPw) {
-      // Scenario B — returning player, no password yet: require one now
-      if (!enteredPw) {
-        showUsernameError("Please set a password to protect your account.");
-        return;
-      }
-      await savePassword(clean, enteredPw);
-      showToast("Password set! Your account is now protected.");
-
-    } else {
-      // Scenario A — new player: require a password before entering
-      if (!enteredPw) {
-        showUsernameError("Please choose a password to protect your account.");
-        return;
-      }
-      await savePassword(clean, enteredPw);
-    }
-
-    // All three scenarios: done validating — enter the game
-    loginPending = false;
-    proceedToGame(loginHasSave);
-    return;
-  }
-
-  // ── PASS 1: first submit — load save and password, then show the field ──
   showUsernameError("");
   const loadingEl = document.getElementById("username-loading");
   const submitBtn = document.getElementById("username-submit-btn");
@@ -1078,29 +1030,42 @@ async function handleUsernameSubmit() {
   if (loadingEl) loadingEl.style.display = "none";
   if (submitBtn) submitBtn.disabled = false;
 
-  // Cache results for Pass 2
-  loginHasSave = hasSave;
-  loginSavedPw = savedPw;
-  loginPending  = true;
-
-  // Show the password field with the correct label for each scenario
   if (hasSave && savedPw) {
-    // Scenario C — password required
-    if (pwLabel) pwLabel.textContent = "Enter your password:";
-    if (pwHint)  pwHint.textContent  = "Your account is password protected.";
+    // Scenario C — returning player WITH a saved password: require it
+    if (!enteredPw) {
+      showUsernameError("This account has a password. Please enter it.");
+      if (passwordInput) passwordInput.focus();
+      return;
+    }
+    if (enteredPw !== savedPw) {
+      showUsernameError("Incorrect password. Try again.");
+      if (passwordInput) { passwordInput.value = ""; passwordInput.focus(); }
+      return;
+    }
+    // Correct — persist locally so the field auto-fills next visit
+    localStorage.setItem("empire_password_" + clean, enteredPw);
+
   } else if (hasSave && !savedPw) {
-    // Scenario B — returning player, no password on file
-    if (pwLabel) pwLabel.textContent = "Set a password (required):";
-    if (pwHint)  pwHint.textContent  = "Your account needs a password. Choose one to continue.";
+    // Scenario B — returning player, no password on file yet: require one now
+    if (!enteredPw) {
+      showUsernameError("Please set a password to protect your account.");
+      if (passwordInput) passwordInput.focus();
+      return;
+    }
+    await savePassword(clean, enteredPw);
+    showToast("Password set! Your account is now protected.");
+
   } else {
-    // Scenario A — new player
-    if (pwLabel) pwLabel.textContent = "Set a password (required):";
-    if (pwHint)  pwHint.textContent  = "Choose a password to protect your save.";
+    // Scenario A — new player: require a password before entering
+    if (!enteredPw) {
+      showUsernameError("Please choose a password to protect your new account.");
+      if (passwordInput) passwordInput.focus();
+      return;
+    }
+    await savePassword(clean, enteredPw);
   }
 
-  if (pwWrap) pwWrap.style.display = "block";
-  if (passwordInput) passwordInput.focus();
-  // Do NOT call proceedToGame() here — wait for Pass 2 (next submit)
+  proceedToGame(hasSave);
 }
 
 // ── CHARACTER SELECT ───────────────────────────────────────────
@@ -1293,16 +1258,24 @@ window.addEventListener("DOMContentLoaded", function () {
     submitBtn.addEventListener("click", handleUsernameSubmit);
   }
 
-  // Pre-fill username if we recognise this browser from a previous visit
+  // Pre-fill username (and password) if we recognise this browser
   const savedUsername = localStorage.getItem("empire_username");
+  const passwordInput = document.getElementById("password-input");
   if (savedUsername && usernameInput) {
     usernameInput.value = savedUsername;
     const hint = document.getElementById("username-hint");
     if (hint) hint.textContent = "Welcome back! Press Enter to continue, or type a new name.";
+
+    // Pre-fill saved password — returning player just presses Enter
+    const savedPwLocal = localStorage.getItem("empire_password_" + savedUsername);
+    if (savedPwLocal && passwordInput) {
+      passwordInput.value = savedPwLocal;
+      const pwHint = document.getElementById("password-hint");
+      if (pwHint) pwHint.textContent = "Password saved — just press Enter to jump back in!";
+    }
   }
 
   // Password input — pressing Enter submits the form
-  const passwordInput = document.getElementById("password-input");
   if (passwordInput) {
     passwordInput.addEventListener("keydown", function (e) {
       if (e.key === "Enter") handleUsernameSubmit();
