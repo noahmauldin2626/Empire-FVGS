@@ -583,7 +583,6 @@ function mainGameLoop() {
     }
   }
 
-  tickRandomEvents();
   processManagerTap(1);
   processSectorManagerSalaries();   // Update 5.6 — sector manager salaries
   recalculateStats();

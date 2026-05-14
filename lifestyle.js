@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 // EMPIRE — lifestyle.js  (New in Update 5.8)
-// Lifestyle Modal, Silly Shop, Trophy Room, Random Events.
+// Lifestyle Modal, Silly Shop, Trophy Room.
 // All purely vanity — no income, no net worth effect.
 // ═══════════════════════════════════════════════════════════════
 
@@ -46,27 +46,6 @@ const SILLY_ITEMS = [
   { id: "statue_of_self",               name: "Commission a Statue of Yourself", emoji: "🗿", description: "Bronze. Life-size. In your front yard. Neighbors have opinions.",                                         price: 500000,    uncleReaction: "A statue. Of YOU. In YOUR yard. Uncle Funds is ordering one of himself immediately." },
   { id: "buy_a_cloud",                  name: "Name a Cloud Formation",        emoji: "☁️",   description: "Meteorologists refused. A guy on Etsy agreed. It is named after you now.",                                price: 200,       uncleReaction: "You named a CLOUD. For two hundred dollars. That might be the best deal you have ever made." }
 ];
-
-// ── RANDOM EVENTS DATA ──────────────────────────────────────────
-const RANDOM_EVENTS = [
-  { id: "stock_tip",       emoji: "📈", title: "Hot Stock Tip",          message: "A stranger in an elevator whispered a ticker symbol. You have no idea what it means. Feels important." },
-  { id: "paparazzi",       emoji: "📸", title: "Paparazzi Spotted",      message: "Someone photographed you leaving a restaurant. The photo is blurry. You look rich anyway." },
-  { id: "rival_lost",      emoji: "😂", title: "Rival Stumbles",         message: "One of the people on the Rich List made a very bad investment. Uncle Funds is cackling." },
-  { id: "mystery_package", emoji: "📦", title: "Mystery Package Arrived",message: "A package arrived at your mansion. Contents unknown. It ticks. Probably a clock." },
-  { id: "fan_letter",      emoji: "💌", title: "Fan Mail",               message: "Someone wrote you a letter asking for financial advice. You wrote back: click more." },
-  { id: "magazine_cover",  emoji: "📰", title: "Magazine Feature",       message: "A financial magazine ran a story about you. The headline: 'Who is this person and why do they have so much money?'" },
-  { id: "yacht_incident",  emoji: "🌊", title: "Yacht Incident",         message: "Nothing serious. The captain says it happens all the time. The iceberg disagrees. Everyone is fine." },
-  { id: "butler_drama",    emoji: "🤵", title: "Butler Drama",           message: "Your butler quit. Then came back. Then quit again. He is currently in the foyer. Situation unclear." },
-  { id: "lost_sunglasses", emoji: "🕶️", title: "Lost Your Sunglasses",  message: "You lost your $4,000 sunglasses. They were on your head. Uncle Funds saw the whole thing." },
-  { id: "compliment",      emoji: "✨", title: "Unsolicited Compliment", message: "A random person told you that you look like money. You took it as a compliment. It was." },
-  { id: "accountant_news", emoji: "😬", title: "Accountant Update",      message: "Your accountant called with news. You have more money than you thought. They sounded scared." },
-  { id: "neighbor_jealous",emoji: "😤", title: "Jealous Neighbor",       message: "Your neighbor saw your new car and immediately bought a boat. They live in a landlocked state." }
-];
-
-// ── RANDOM EVENT STATE ──────────────────────────────────────────
-let spinCooldownRemaining = 0;
-let randomEventAutoTimer  = 0;
-let autoEventThreshold    = 180 + Math.floor(Math.random() * 300); // 3-8 min random
 
 // ── LIFESTYLE MODAL ─────────────────────────────────────────────
 
@@ -347,75 +326,3 @@ function renderFlex() {
   content.innerHTML = html;
 }
 
-// ── RANDOM EVENTS ───────────────────────────────────────────────
-
-function showEventToast(event) {
-  const existing = document.getElementById("event-toast-el");
-  if (existing) existing.remove();
-  const el = document.createElement("div");
-  el.id        = "event-toast-el";
-  el.className = "event-toast";
-  el.innerHTML = `<strong>${event.emoji} ${event.title}</strong><br>${event.message}`;
-  document.body.appendChild(el);
-  setTimeout(() => { if (el.parentNode) el.remove(); }, 5000);
-}
-
-function showAutoEvent() {
-  const event = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
-  showEventToast(event);
-}
-
-function tickRandomEvents() {
-  randomEventAutoTimer++;
-
-  if (spinCooldownRemaining > 0) {
-    spinCooldownRemaining--;
-    updateSpinButton();
-  }
-
-  // Auto-fire random event when threshold reached
-  if (randomEventAutoTimer >= autoEventThreshold) {
-    randomEventAutoTimer = 0;
-    autoEventThreshold = 180 + Math.floor(Math.random() * 300); // reset random threshold
-    if (gameState.chapter > 0) showAutoEvent();
-  }
-}
-
-function openSpinWheel() {
-  if (spinCooldownRemaining > 0) {
-    const m = Math.floor(spinCooldownRemaining / 60);
-    const s = spinCooldownRemaining % 60;
-    showToast("Spin available in " + m + "m " + s + "s!");
-    return;
-  }
-  const event = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
-  spinCooldownRemaining = 600;
-  updateSpinButton();
-
-  const emojiEl   = document.getElementById("spin-event-emoji");
-  const titleEl   = document.getElementById("spin-event-title");
-  const messageEl = document.getElementById("spin-event-message");
-  if (emojiEl)   emojiEl.textContent   = event.emoji;
-  if (titleEl)   titleEl.textContent   = event.title;
-  if (messageEl) messageEl.textContent = event.message;
-
-  const modal = document.getElementById("spin-modal");
-  if (modal) modal.style.display = "flex";
-}
-
-function closeSpinModal() {
-  const modal = document.getElementById("spin-modal");
-  if (modal) modal.style.display = "none";
-}
-
-function updateSpinButton() {
-  const btn = document.getElementById("spin-btn");
-  if (!btn) return;
-  if (spinCooldownRemaining > 0) {
-    const m = Math.floor(spinCooldownRemaining / 60);
-    const s = spinCooldownRemaining % 60;
-    btn.textContent = "🎲 Spin (" + m + "m " + s + "s)";
-  } else {
-    btn.textContent = "🎲 Spin";
-  }
-}
