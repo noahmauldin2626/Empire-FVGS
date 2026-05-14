@@ -278,6 +278,24 @@ const DIALOGUE_TRIGGERS = {
     "A HYPERCAR. You just spent MILLIONS on a car that cannot legally use its top speed ANYWHERE.",
     "That is the most unhinged thing you have ever done. Uncle Funds has NEVER been more proud.",
     "The road isn't ready for you, {pronoun}. The road is not WORTHY of you."
+  ],
+
+  // ── UPDATE 5.8: LIFESTYLE & SILLY TRIGGERS ─────────────────
+  first_lifestyle: [
+    "A LIFESTYLE PURCHASE. Not an investment. Not income. Just... FUN.",
+    "{pronoun} is spending money on LIVING. Uncle Funds approves FULLY.",
+    "The point of being rich is THIS. Remember that."
+  ],
+
+  first_silly: [
+    "I... what. WHAT did you just buy.",
+    "Uncle Funds has helped build many empires. Never seen THIS.",
+    "I respect it. I do not understand it. I RESPECT it."
+  ],
+
+  first_vacation: [
+    "A vacation! Genius! The passive income runs while you're GONE.",
+    "You are getting paid to relax, {pronoun}. This is the DREAM."
   ]
 
 };

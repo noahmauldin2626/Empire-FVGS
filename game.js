@@ -33,7 +33,7 @@
 // Update this string each time you ship a new update.
 // The changelog modal auto-shows once when this doesn't match
 // what's stored in gameState.lastSeenChangelog.
-const CHANGELOG_VERSION = "5_6_7";
+const CHANGELOG_VERSION = "5_8";
 
 // ── ACTIVE USERNAME ────────────────────────────────────────────
 // Holds the name the player typed on the username screen.
@@ -133,6 +133,15 @@ const gameState = {
   // --- Bills (Update 5.6.4) ---
   totalBillsPaid:   0,    // lifetime total cash deducted by operating bills
   hasSeenFirstBill: false, // true after the first-bill tutorial fires
+
+  // --- Lifestyle & Silly Purchases (Update 5.8 — vanity only, no income effect) ---
+  lifestylePurchases:       [],    // array of purchased item id strings (lifestyle + silly)
+  hasSeenFirstLifestyle:    false,
+  hasSeenFirstSilly:        false,
+  hasSeenFirstVacation:     false,
+
+  // --- Theme (Update 5.8) ---
+  theme: "dark",   // "dark" or "light"
 };
 
 // ── POWER CLICK STATE ──────────────────────────────────────────
@@ -302,6 +311,13 @@ function fillMissingFields() {
   if (gameState.totalBillsPaid  === undefined) gameState.totalBillsPaid  = 0;
   if (gameState.hasSeenFirstBill === undefined) gameState.hasSeenFirstBill = false;
 
+  // --- Fields added in Update 5.8 ---
+  if (!gameState.lifestylePurchases)                   gameState.lifestylePurchases    = [];
+  if (gameState.hasSeenFirstLifestyle === undefined)   gameState.hasSeenFirstLifestyle  = false;
+  if (gameState.hasSeenFirstSilly     === undefined)   gameState.hasSeenFirstSilly      = false;
+  if (gameState.hasSeenFirstVacation  === undefined)   gameState.hasSeenFirstVacation   = false;
+  if (!gameState.theme)                                gameState.theme                  = "dark";
+
   // Update 5.5 guard — seeds prices for any NEW coins added to CRYPTOS
   // that are missing from an existing save's cryptoPrices object.
   // Runs for returning players whose saves pre-date the new coins.
@@ -455,7 +471,14 @@ function playAgain() {
 
     // Update 5.6.4 keys:
     totalBillsPaid:   0,
-    hasSeenFirstBill: false
+    hasSeenFirstBill: false,
+
+    // Update 5.8 keys:
+    lifestylePurchases:    [],
+    hasSeenFirstLifestyle: false,
+    hasSeenFirstSilly:     false,
+    hasSeenFirstVacation:  false,
+    theme:                 "dark",
   });
 
   document.getElementById("win-screen").style.display   = "none";
@@ -560,6 +583,7 @@ function mainGameLoop() {
     }
   }
 
+  tickRandomEvents();
   processManagerTap(1);
   processSectorManagerSalaries();   // Update 5.6 — sector manager salaries
   recalculateStats();
@@ -824,6 +848,7 @@ function updateUI() {
   renderManager();
 
   renderRichList();
+  renderFlex();
 }
 
 function setText(id, text) {
@@ -923,6 +948,12 @@ function openSettings() {
     }
   });
 
+  // Sync theme button active state
+  const darkBtn  = document.getElementById("theme-btn-dark");
+  const lightBtn = document.getElementById("theme-btn-light");
+  if (darkBtn)  darkBtn.classList.toggle("theme-btn-active",  gameState.theme === "dark");
+  if (lightBtn) lightBtn.classList.toggle("theme-btn-active", gameState.theme !== "dark");
+
   const modal = document.getElementById("settings-modal");
   if (modal) modal.style.display = "flex";
 }
@@ -930,6 +961,28 @@ function openSettings() {
 function closeSettings() {
   const modal = document.getElementById("settings-modal");
   if (modal) modal.style.display = "none";
+}
+
+// ── THEME SYSTEM (Update 5.8) ────────────────────────────────────
+function setTheme(themeName) {
+  gameState.theme = themeName;
+  applyTheme(themeName);
+  saveGame();
+
+  const darkBtn  = document.getElementById("theme-btn-dark");
+  const lightBtn = document.getElementById("theme-btn-light");
+  if (darkBtn)  darkBtn.classList.toggle("theme-btn-active",  themeName === "dark");
+  if (lightBtn) lightBtn.classList.toggle("theme-btn-active", themeName === "light");
+}
+
+function applyTheme(themeName) {
+  if (themeName === "light") {
+    document.body.classList.add("theme-light");
+    document.body.classList.remove("theme-dark");
+  } else {
+    document.body.classList.add("theme-dark");
+    document.body.classList.remove("theme-light");
+  }
 }
 
 // Called by each slider's oninput handler. Saves value immediately.
@@ -1183,6 +1236,7 @@ function startGame() {
 
   // Update 5.1: initialise Power Click indicator to "ready" state
   updatePowerClickUI();
+  applyTheme(gameState.theme);
 
   // ── Game loops ───────────────────────────────────────────────
   setInterval(mainGameLoop, 1000);             // main loop: every 1 second

@@ -17,7 +17,7 @@
 <div id="username-screen">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.7 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.8 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -88,7 +88,7 @@
 <div id="intro-screen" style="display:none;">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.7 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.8 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -172,7 +172,7 @@
   <div class="modal-inner modal-changelog">
 
     <div class="modal-header">
-      <span>📋 What's New — Update 5.6.7</span>
+      <span>📋 What's New — Update 5.8</span>
       <!-- X button calls dismissChangelog() in game.js -->
       <button class="modal-close-btn" onclick="dismissChangelog()">✕</button>
     </div>
@@ -180,24 +180,11 @@
     <div class="modal-body">
       <p class="changelog-subtitle">by Flaco's Video Game Studio</p>
       <ul class="changelog-list">
-        <li>
-          <strong>Bug Fix: Break-Even Price</strong> —
-          The break-even price on stocks and crypto was inflating
-          incorrectly after large buys and partial sells. Cost basis
-          now reduces proportionally when you sell, keeping the
-          break-even figure accurate at all times.
-        </li>
-        <li>
-          <strong>Mouse Hold = Power Click</strong> —
-          Holding the Click to Earn button activates Power Click,
-          just like holding Enter or Space. Quick taps still work
-          as normal single clicks with no cooldown penalty.
-        </li>
-        <li>
-          <strong>Login: Persistent Password</strong> —
-          The password field is always visible on the landing page
-          and saved in your browser — returning players just press Enter.
-        </li>
+        <li><strong>Lifestyle Modal</strong> — New Lifestyle button in the top bar. Buy vacations, hire staff, and book experiences. All purely for fun. None of it makes money. That is the point.</li>
+        <li><strong>Silly Shop</strong> — Buy completely absurd things with your fortune. Gold toilet, cloned dinosaur, emotional support accountant, and more. Uncle Funds has reactions to all of them.</li>
+        <li><strong>Trophy Room</strong> — A collapsible panel in the center column showing everything you own that does not make money. Cars, home, vacations, lifestyle purchases, and silly items all in one place.</li>
+        <li><strong>Random Events</strong> — Events fire automatically every few minutes with funny flavor messages. Hit the Spin button for an instant random event with a 10-minute cooldown.</li>
+        <li><strong>Light Mode</strong> — Toggle between dark and light themes in Settings under Appearance. Your preference is saved automatically.</li>
       </ul>
       <button class="btn btn-buy" onclick="dismissChangelog()"
               style="width:100%; margin-top:1rem;">
@@ -281,6 +268,62 @@
 
 
 <!-- ════════════════════════════════════════════════════════════
+     LIFESTYLE MODAL (Update 5.8)
+     Opens when the player clicks "🌴 Lifestyle" in the top bar.
+     ════════════════════════════════════════════════════════════ -->
+<div id="lifestyle-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-inner" style="max-width:520px;">
+    <div class="modal-header">
+      <span>🌴 Lifestyle</span>
+      <button class="modal-close-btn" onclick="closeLifestyle()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div class="lifestyle-tabs">
+        <button class="lifestyle-tab lifestyle-tab-active" onclick="switchLifestyleTab('vacations')">🏖️ Vacations</button>
+        <button class="lifestyle-tab" onclick="switchLifestyleTab('staff')">💼 Staff</button>
+        <button class="lifestyle-tab" onclick="switchLifestyleTab('experiences')">✨ Experiences</button>
+      </div>
+      <div id="lifestyle-content" style="padding:1rem;"></div>
+    </div>
+  </div>
+</div><!-- /lifestyle-modal -->
+
+
+<!-- ════════════════════════════════════════════════════════════
+     SILLY SHOP MODAL (Update 5.8)
+     Opens when the player clicks "🎉 Silly Shop" in the top bar.
+     ════════════════════════════════════════════════════════════ -->
+<div id="silly-shop-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-inner" style="max-width:500px;">
+    <div class="modal-header">
+      <span>🎉 Silly Shop</span>
+      <button class="modal-close-btn" onclick="closeSillyShop()">✕</button>
+    </div>
+    <div class="modal-body" id="silly-shop-content"></div>
+  </div>
+</div><!-- /silly-shop-modal -->
+
+
+<!-- ════════════════════════════════════════════════════════════
+     SPIN MODAL (Update 5.8)
+     Opens when the player clicks "🎲 Spin" in the top bar.
+     ════════════════════════════════════════════════════════════ -->
+<div id="spin-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-inner" style="max-width:400px; text-align:center;">
+    <div class="modal-header" style="justify-content:center;">
+      <span>🎲 Random Event!</span>
+    </div>
+    <div class="modal-body" style="padding:1.5rem; text-align:center;">
+      <div id="spin-event-emoji" style="font-size:3rem; margin-bottom:0.6rem;"></div>
+      <div id="spin-event-title" style="font-size:1.1rem; font-weight:900; margin-bottom:0.5rem; color:#1b5e20;"></div>
+      <div id="spin-event-message" style="font-size:0.88rem; color:#424242; line-height:1.5; margin-bottom:1rem;"></div>
+      <button class="btn btn-buy" onclick="closeSpinModal()" style="width:100%;">Nice 👍</button>
+    </div>
+  </div>
+</div><!-- /spin-modal -->
+
+
+<!-- ════════════════════════════════════════════════════════════
      MAIN GAME SCREEN
      Hidden until the player has entered their username and
      either selected a character (new) or had their save loaded (returning).
@@ -334,6 +377,9 @@
     <button class="top-action-btn" onclick="openDealership()">🚗 Dealership</button>
     <button class="top-action-btn" onclick="openGarage()">🏎️ Garage</button>
     <button class="top-action-btn" onclick="openHome()">🏠 My Home</button>
+    <button class="top-action-btn" onclick="openLifestyle()">🌴 Lifestyle</button>
+    <button class="top-action-btn" onclick="openSillyShop()">🎉 Silly Shop</button>
+    <button class="top-action-btn" id="spin-btn" onclick="openSpinWheel()">🎲 Spin</button>
     <button class="top-action-btn" onclick="showChangelog()">📋 Changelog</button>
     <button class="top-action-btn" onclick="openSettings()">⚙️ Settings</button>
 
@@ -375,6 +421,13 @@
       </div>
 
       <div id="rich-list-display"></div>
+
+      <div id="flex-section">
+        <div id="flex-header" onclick="toggleFlex()">
+          🏆 Trophy Room <span id="flex-toggle-arrow">▼</span>
+        </div>
+        <div id="flex-content" style="display:none;"></div>
+      </div>
 
     </div><!-- /center-panel -->
 
@@ -538,6 +591,19 @@
 
       <hr style="margin:1.2rem 0; border-color:#e0e0e0;" />
 
+      <!-- APPEARANCE SECTION (Update 5.8) -->
+      <div class="settings-section">
+        <div class="settings-section-title">🎨 Appearance</div>
+        <div class="settings-row">
+          <label class="settings-label">Theme</label>
+          <div class="theme-toggle-wrap">
+            <button class="theme-btn" id="theme-btn-dark" onclick="setTheme('dark')">🌙 Dark</button>
+            <button class="theme-btn theme-btn-active" id="theme-btn-light" onclick="setTheme('light')">☀️ Light</button>
+          </div>
+        </div>
+      </div>
+      <hr style="margin:1.2rem 0; border-color:#e0e0e0;" />
+
       <!-- AUDIO SECTION -->
       <div class="settings-section">
         <div class="settings-section-title">🔊 Audio</div>
@@ -624,6 +690,7 @@
 <!-- Update 3: New feature files — must load BEFORE game.js -->
 <script src="crypto.js"></script>    <!-- crypto data, buy/sell, tab switching -->
 <script src="vehicles.js"></script>  <!-- cars, home — buy logic + modal rendering -->
+<script src="lifestyle.js"></script> <!-- Update 5.8: lifestyle, silly shop, trophy room, random events -->
 
 <script src="game.js"></script>  <!-- LOADS LAST — depends on everything above -->
 
