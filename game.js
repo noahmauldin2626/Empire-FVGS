@@ -1001,12 +1001,12 @@ async function changePassword() {
 
   const newPw = input.value.trim();
   if (!newPw) {
-    await deletePassword(activeUsername);
-    if (feedback) { feedback.textContent = "Password removed. Account is now open."; feedback.style.color = "#388e3c"; }
-  } else {
-    await savePassword(activeUsername, newPw);
-    if (feedback) { feedback.textContent = "Password updated successfully!"; feedback.style.color = "#388e3c"; }
+    if (feedback) { feedback.textContent = "Password cannot be blank."; feedback.style.color = "#c62828"; }
+    setTimeout(() => { if (feedback) feedback.textContent = ""; }, 3000);
+    return;
   }
+  await savePassword(activeUsername, newPw);
+  if (feedback) { feedback.textContent = "Password updated successfully!"; feedback.style.color = "#388e3c"; }
   input.value = "";
   setTimeout(() => { if (feedback) feedback.textContent = ""; }, 3000);
 }
