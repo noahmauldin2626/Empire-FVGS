@@ -138,11 +138,13 @@ const gameState = {
 // ── POWER CLICK STATE ──────────────────────────────────────────
 // Tracks whether Power Click is currently active or cooling down.
 // Hold Enter or Space to activate — fires clicks automatically for 15s.
-let powerClickActive   = false; // true while the key is held and firing
-let powerClickCooldown = false; // true during the 3-sec cooldown
-let powerClickInterval = null;  // the setInterval handle for rapid clicks
-let powerClickTimeout  = null;  // the setTimeout handle for the 10-sec limit
-let powerClickCoolTimer = null; // the setTimeout handle for cooldown expiry
+let powerClickActive    = false; // true while the key is held and firing
+let powerClickCooldown  = false; // true during the 3-sec cooldown
+let powerClickInterval  = null;  // the setInterval handle for rapid clicks
+let powerClickTimeout   = null;  // the setTimeout handle for the 10-sec limit
+let powerClickCoolTimer = null;  // the setTimeout handle for cooldown expiry
+let mouseHoldTimer      = null;  // setTimeout before mouse-hold activates Power Click
+let mouseHoldActivated  = false; // true if mouse hold triggered Power Click this press
 
 // ── FORMATTING ─────────────────────────────────────────────────
 
@@ -752,7 +754,7 @@ function updatePowerClickUI() {
     indicator.textContent = "❄️ POWER CLICK COOLING DOWN...";
     indicator.className   = "power-click-indicator power-click-cooldown";
   } else {
-    indicator.textContent = "Hold ENTER or SPACE for Power Click";
+    indicator.textContent = "Hold ENTER, SPACE or the button for Power Click";
     indicator.className   = "power-click-indicator power-click-ready";
   }
 }
@@ -1237,7 +1239,39 @@ window.addEventListener("DOMContentLoaded", function () {
 
   // Wire up all button handlers
   const moneyBtn = document.getElementById("money-btn");
-  if (moneyBtn) moneyBtn.addEventListener("click", handleMoneyClick);
+  if (moneyBtn) {
+    // Regular click — skip if a mouse-hold just ended (Power Click already fired the earns)
+    moneyBtn.addEventListener("click", function (e) {
+      if (mouseHoldActivated) { mouseHoldActivated = false; return; }
+      handleMoneyClick(e);
+    });
+
+    // ── MOUSE HOLD = POWER CLICK ──────────────────────────────
+    // Holding the button > 150ms activates Power Click, same as Enter/Space.
+    // Quick taps bypass this entirely so normal single clicks are unaffected.
+    moneyBtn.addEventListener("mousedown", function (e) {
+      if (e.button !== 0) return; // left button only
+      mouseHoldActivated = false;
+      mouseHoldTimer = setTimeout(function () {
+        mouseHoldTimer     = null;
+        mouseHoldActivated = true;
+        startPowerClick();
+      }, 150);
+    });
+
+    function cancelMouseHold() {
+      if (mouseHoldTimer !== null) {
+        clearTimeout(mouseHoldTimer);
+        mouseHoldTimer = null;
+        // Held < 150ms — Power Click never started; let the click event fire normally
+      } else if (powerClickActive) {
+        stopPowerClick(true);
+      }
+    }
+
+    moneyBtn.addEventListener("mouseup",    cancelMouseHold);
+    moneyBtn.addEventListener("mouseleave", cancelMouseHold);
+  }
 
   const nextBtn = document.getElementById("uncle-next-btn");
   if (nextBtn) nextBtn.addEventListener("click", advanceDialogue);
