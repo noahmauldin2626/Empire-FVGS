@@ -36,10 +36,3 @@ const UNCLE_FUNDS = {
   catchphrase: "UNCLE FUNDS IS ALWAYS RIGHT... mostly."
 };
 
-// Uncle Sam — the tax collector NPC (Update 5.6.4).
-// Appears periodically via a modal to collect taxes scaled by net worth tier.
-const UNCLE_SAM = {
-  name: "Uncle Sam",
-  emoji: "🇺🇸",
-  catchphrase: "I WANT YOU... to pay your taxes."
-};

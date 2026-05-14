@@ -238,19 +238,6 @@ const DIALOGUE_TRIGGERS = {
     "Keep that passive income GROWING and you'll barely notice. Probably."
   ],
 
-  first_tax: [
-    "Ah. Uncle SAM has arrived.",
-    "Not me — Uncle SAM. Different uncle. WAY less fun. He works for the government.",
-    "He wants a percentage of your cash. Non-negotiable. This is reality now, {pronoun}.",
-    "Pay the man. You can afford it. Probably."
-  ],
-
-  big_tax: [
-    "UNCLE SAM AGAIN. Already. At this tax rate he basically LIVES here.",
-    "The price of being enormously, obscenely wealthy. Pay it and move on, {pronoun}.",
-    "Uncle Funds paid his taxes once. Never again. But you should. Legally."
-  ],
-
   // ── CHAPTER 5: YACHT FLEET (Update 4) ────────────────────
   ch5_unlock: [
     "ONE HUNDRED MILLION DOLLARS. {pronoun}. I need to sit down. I AM SITTING DOWN.",

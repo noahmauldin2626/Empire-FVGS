@@ -17,7 +17,7 @@
 <div id="username-screen">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.4 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.5 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -88,7 +88,7 @@
 <div id="intro-screen" style="display:none;">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.4 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.5 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -172,81 +172,40 @@
   <div class="modal-inner modal-changelog">
 
     <div class="modal-header">
-      <span>📋 What's New — Update 5.6.4</span>
+      <span>📋 What's New — Update 5.6.5</span>
       <!-- X button calls dismissChangelog() in game.js -->
       <button class="modal-close-btn" onclick="dismissChangelog()">✕</button>
     </div>
 
     <div class="modal-body">
       <p class="changelog-subtitle">by Flaco's Video Game Studio</p>
-
       <ul class="changelog-list">
         <li>
-          <strong>💸 Bills System</strong> —
-          Running an empire has costs. Every sector now generates operating
-          expenses — property taxes, brokerage fees, business overheads,
-          airline maintenance, and yacht upkeep. Bills are automatically
-          deducted from your cash each second. Keep your passive income
-          higher than your bills to stay in the green!
+          <strong>Bug Fix: Lock Tooltips</strong> —
+          Hovering over unlocked panels and cards no longer incorrectly
+          shows the lock tooltip. Tooltips now only appear on content
+          that is genuinely still locked.
         </li>
         <li>
-          <strong>🇺🇸 Uncle Sam Tax</strong> —
-          The taxman visits periodically. Uncle Sam drops by to collect
-          a percentage of your current cash, with the rate and frequency
-          scaling by your net worth tier. Pay up — there's no escaping him.
+          <strong>Bills System</strong> —
+          Operating costs on all owned assets are deducted each second.
+          Properties, businesses, yachts, airlines, cars, and your home
+          all have running costs shown in red in the top bar.
         </li>
         <li>
-          <strong>🏗️ Expanded Rich List — Apex Tier</strong> —
-          The Rich List has grown from 15 to 20 rivals. Five brand-new
-          Apex-Tier titans (A1–A5) sit above THE MONEY GHOST, topped by
-          the ultimate endgame boss: THE ARCHITECT at $500 Billion.
-          Beat THE ARCHITECT to win the game.
-        </li>
-        <li>
-          <strong>🏆 New Win Condition</strong> —
-          Surpass THE ARCHITECT's $500 Billion net worth to claim victory.
-          THE MONEY GHOST ($10B) is now a milestone, not the finish line.
+          <strong>Expanded Rich List</strong> —
+          Five new Apex Tier rivals (A1-A5) added above the Super Tier.
+          The new win condition is defeating THE ARCHITECT at $500 Billion.
         </li>
       </ul>
-
       <button class="btn btn-buy" onclick="dismissChangelog()"
               style="width:100%; margin-top:1rem;">
-        Let's Go! 💰
+        Let's Go!
       </button>
     </div>
 
   </div>
 </div><!-- /changelog-modal -->
-
-
-<!-- ════════════════════════════════════════════════════════════
-     UNCLE SAM MODAL — Update 5.6.4
-     Triggered periodically by checkTaxEvent() in game.js.
-     showUncleSamModal() / dismissUncleSam() are in game.js.
-     ════════════════════════════════════════════════════════════ -->
-<div id="uncle-sam-modal" class="modal-overlay" style="display:none;">
-  <div class="modal-inner">
-
-    <div class="uncle-sam-header">
-      <div class="uncle-sam-flag">🇺🇸</div>
-      <div class="uncle-sam-title">UNCLE SAM IS HERE</div>
-      <p class="uncle-sam-quote">"I want YOU... to pay your taxes."</p>
-    </div>
-
-    <div class="modal-body" style="padding:0 1.2rem 1.2rem;">
-      <div class="uncle-sam-amount-block">
-        <span class="uncle-sam-rate-label">Tax Rate: <strong id="uncle-sam-rate">0%</strong> of current cash</span>
-        <span class="uncle-sam-amount-label">Amount Due:</span>
-        <span class="uncle-sam-amount" id="uncle-sam-amount">$0</span>
-      </div>
-      <!-- Clicking either button calls dismissUncleSam(true) — tax is non-negotiable -->
-      <button class="btn uncle-sam-pay-btn" onclick="dismissUncleSam(true)">
-        💸 Pay Taxes
-      </button>
-    </div>
-
-  </div>
-</div><!-- /uncle-sam-modal -->
 
 
 <!-- ════════════════════════════════════════════════════════════

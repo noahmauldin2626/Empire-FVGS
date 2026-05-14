@@ -33,7 +33,7 @@
 // Update this string each time you ship a new update.
 // The changelog modal auto-shows once when this doesn't match
 // what's stored in gameState.lastSeenChangelog.
-const CHANGELOG_VERSION = "5_6_4";
+const CHANGELOG_VERSION = "5_6_5";
 
 // ── ACTIVE USERNAME ────────────────────────────────────────────
 // Holds the name the player typed on the username screen.
@@ -134,13 +134,9 @@ const gameState = {
   // --- Changelog (Update 3) ---
   lastSeenChangelog: "",  // set to CHANGELOG_VERSION after the player sees the modal
 
-  // --- Bills & Taxes (Update 5.6.4) ---
-  totalBillsPaid:  0,     // lifetime total cash deducted by operating bills
+  // --- Bills (Update 5.6.4) ---
+  totalBillsPaid:   0,    // lifetime total cash deducted by operating bills
   hasSeenFirstBill: false, // true after the first-bill tutorial fires
-  totalTaxPaid:    0,     // lifetime total cash paid to Uncle Sam
-  hasSeenFirstTax: false, // true after the first-tax tutorial fires
-  lastTaxTime:     0,     // Date.now() timestamp of last tax event (0 = not yet started)
-  taxEventPending: false, // true while the Uncle Sam modal is open
 };
 
 // ── POWER CLICK STATE ──────────────────────────────────────────
@@ -307,10 +303,6 @@ function fillMissingFields() {
   // --- Fields added in Update 5.6.4 ---
   if (gameState.totalBillsPaid  === undefined) gameState.totalBillsPaid  = 0;
   if (gameState.hasSeenFirstBill === undefined) gameState.hasSeenFirstBill = false;
-  if (gameState.totalTaxPaid    === undefined) gameState.totalTaxPaid    = 0;
-  if (gameState.hasSeenFirstTax === undefined) gameState.hasSeenFirstTax = false;
-  if (gameState.lastTaxTime     === undefined) gameState.lastTaxTime     = 0;
-  if (gameState.taxEventPending === undefined) gameState.taxEventPending = false;
 
   // Update 5.5 guard — seeds prices for any NEW coins added to CRYPTOS
   // that are missing from an existing save's cryptoPrices object.
@@ -465,11 +457,7 @@ function playAgain() {
 
     // Update 5.6.4 keys:
     totalBillsPaid:   0,
-    hasSeenFirstBill: false,
-    totalTaxPaid:     0,
-    hasSeenFirstTax:  false,
-    lastTaxTime:      0,
-    taxEventPending:  false
+    hasSeenFirstBill: false
   });
 
   document.getElementById("win-screen").style.display   = "none";
@@ -550,105 +538,6 @@ function calculateTotalBills() {
   return propBills + stockBills + cryptoBills + bizBills + yachtBizBills + yachtBills + airlineBills;
 }
 
-// ── TAX SYSTEM (Update 5.6.4) ──────────────────────────────────
-
-// Tax tiers: sorted highest net worth first so getCurrentTaxTier()
-// returns the highest applicable tier on the first match.
-const TAX_TIERS = [
-  { minNetWorth: 500000000,  taxRate: 0.20, intervalSec: 30  }, // $500M+: 20% every 30s
-  { minNetWorth: 100000000,  taxRate: 0.15, intervalSec: 45  }, // $100M+: 15% every 45s
-  { minNetWorth: 10000000,   taxRate: 0.12, intervalSec: 60  }, // $10M+:  12% every 60s
-  { minNetWorth: 1000000,    taxRate: 0.08, intervalSec: 90  }, // $1M+:   8%  every 90s
-  { minNetWorth: 100000,     taxRate: 0.05, intervalSec: 120 }, // $100K+: 5%  every 2min
-];
-
-// Returns the highest applicable tax tier based on current net worth, or null if below threshold.
-function getCurrentTaxTier() {
-  for (const tier of TAX_TIERS) {
-    if (gameState.netWorth >= tier.minNetWorth) return tier;
-  }
-  return null;
-}
-
-// Called every second from mainGameLoop — checks if it's time for Uncle Sam.
-function checkTaxEvent() {
-  if (gameState.taxEventPending) return; // modal already open
-  const tier = getCurrentTaxTier();
-  if (!tier) return;
-
-  const now = Date.now();
-  // First call: initialise the timer from now so we don't immediately tax on load.
-  if (!gameState.lastTaxTime) {
-    gameState.lastTaxTime = now;
-    return;
-  }
-
-  const elapsedSec = (now - gameState.lastTaxTime) / 1000;
-  if (elapsedSec >= tier.intervalSec) {
-    triggerTaxEvent(tier);
-  }
-}
-
-// Fires the Uncle Sam tax event.
-function triggerTaxEvent(tier) {
-  const taxAmount = Math.floor(gameState.cash * tier.taxRate);
-  if (taxAmount <= 0) {
-    // Nothing to collect — just reset the timer and move on.
-    gameState.lastTaxTime = Date.now();
-    return;
-  }
-
-  gameState.taxEventPending = true;
-
-  // Dialogue tutorial (fires once per type)
-  if (!gameState.hasSeenFirstTax) {
-    gameState.hasSeenFirstTax = true;
-    triggerDialogue("first_tax");
-  } else if (tier.taxRate >= 0.15) {
-    triggerDialogue("big_tax");
-  }
-
-  showUncleSamModal(taxAmount, tier.taxRate);
-}
-
-// Opens the Uncle Sam modal, displaying the amount due.
-function showUncleSamModal(taxAmount, taxRate) {
-  const modal = document.getElementById("uncle-sam-modal");
-  if (!modal) return;
-
-  const amountEl = document.getElementById("uncle-sam-amount");
-  const rateEl   = document.getElementById("uncle-sam-rate");
-  if (amountEl) amountEl.textContent = formatMoney(taxAmount);
-  if (rateEl)   rateEl.textContent   = Math.round(taxRate * 100) + "%";
-
-  // Store the exact integer amount so the pay button uses the same figure.
-  modal.dataset.taxAmount = taxAmount;
-  modal.style.display = "flex";
-}
-
-// Called by the Pay button in the Uncle Sam modal.
-// Tax is mandatory — this always deducts the cash (clamped to 0).
-function dismissUncleSam(pay) {
-  const modal = document.getElementById("uncle-sam-modal");
-  if (!modal) return;
-
-  if (pay) {
-    const amount = parseInt(modal.dataset.taxAmount || "0", 10);
-    if (amount > 0) {
-      gameState.cash = Math.max(0, gameState.cash - amount);
-      gameState.totalTaxPaid = (gameState.totalTaxPaid || 0) + amount;
-      showToast("💸 Tax paid: " + formatMoney(amount));
-    }
-  }
-
-  gameState.taxEventPending = false;
-  gameState.lastTaxTime     = Date.now();
-  modal.style.display = "none";
-
-  recalculateStats();
-  updateUI();
-}
-
 // ── MAIN GAME LOOP ─────────────────────────────────────────────
 
 // Runs every second. Handles passive income, manager, unlocks, UI.
@@ -678,7 +567,6 @@ function mainGameLoop() {
   recalculateStats();
   checkChapterUnlocks();
   checkRichListRank();
-  checkTaxEvent();                  // Update 5.6.4 — Uncle Sam tax events
   updateUI();
 }
 
@@ -695,7 +583,12 @@ function checkChapterUnlocks() {
     gameState.airlineFleetUnlocked = true;
     saveGame();
     const airlineEl = document.getElementById("airline-fleet-section");
-    if (airlineEl) { airlineEl.classList.remove("panel-locked"); renderAirlineFleet(); }
+    if (airlineEl) {
+      airlineEl.classList.remove("panel-locked");
+      const airlineHeader = airlineEl.querySelector(".panel-header");
+      if (airlineHeader) airlineHeader.removeAttribute("data-locked-reason");
+      renderAirlineFleet();
+    }
   }
 }
 
@@ -708,6 +601,8 @@ function unlockChapter(chapterNum) {
     const el = document.getElementById("right-panel");
     if (el) {
       el.classList.remove("panel-locked");
+      const header = el.querySelector(".panel-header");
+      if (header) header.removeAttribute("data-locked-reason");
       renderStocks();
       renderCrypto(); // Update 3: render crypto tab content too
     }
@@ -719,7 +614,12 @@ function unlockChapter(chapterNum) {
 
   if (chapterNum === 3) {
     const el = document.getElementById("businesses-section");
-    if (el) { el.classList.remove("panel-locked"); renderBusinesses(); }
+    if (el) {
+      el.classList.remove("panel-locked");
+      const header = el.querySelector(".panel-header");
+      if (header) header.removeAttribute("data-locked-reason");
+      renderBusinesses();
+    }
     triggerDialogue("ch3_unlock");
   }
 
@@ -735,7 +635,12 @@ function unlockChapter(chapterNum) {
   // Update 4: Yacht Fleet panel unlocks at $100M net worth
   if (chapterNum === 5) {
     const yachtEl = document.getElementById("yacht-fleet-section");
-    if (yachtEl) { yachtEl.classList.remove("panel-locked"); renderYachtFleet(); }
+    if (yachtEl) {
+      yachtEl.classList.remove("panel-locked");
+      const header = yachtEl.querySelector(".panel-header");
+      if (header) header.removeAttribute("data-locked-reason");
+      renderYachtFleet();
+    }
     // Note: Airline Fleet has its own $50M unlock via checkChapterUnlocks() — not here
     triggerDialogue("ch5_unlock");
   }
@@ -1249,8 +1154,10 @@ function startGame() {
       // Not yet unlocked — keep the lock class on
       rightPanel.classList.add("panel-locked");
     } else {
-      // Unlocked — remove the lock class and render both tabs
+      // Unlocked — remove the lock class, strip stale tooltip attr, render tabs
       rightPanel.classList.remove("panel-locked");
+      const rpHeader = rightPanel.querySelector(".panel-header");
+      if (rpHeader) rpHeader.removeAttribute("data-locked-reason");
       renderStocks();
       renderCrypto(); // Update 3: render crypto content alongside stocks
     }
@@ -1263,6 +1170,8 @@ function startGame() {
       bizPanel.classList.add("panel-locked");
     } else {
       bizPanel.classList.remove("panel-locked");
+      const bizHeader = bizPanel.querySelector(".panel-header");
+      if (bizHeader) bizHeader.removeAttribute("data-locked-reason");
       renderBusinesses();
     }
   }
@@ -1283,6 +1192,8 @@ function startGame() {
       yachtPanel.classList.add("panel-locked");
     } else {
       yachtPanel.classList.remove("panel-locked");
+      const yachtHeader = yachtPanel.querySelector(".panel-header");
+      if (yachtHeader) yachtHeader.removeAttribute("data-locked-reason");
       renderYachtFleet();
     }
   }
@@ -1294,6 +1205,8 @@ function startGame() {
       airlinePanel.classList.add("panel-locked");
     } else {
       airlinePanel.classList.remove("panel-locked");
+      const airlineHeader = airlinePanel.querySelector(".panel-header");
+      if (airlineHeader) airlineHeader.removeAttribute("data-locked-reason");
       renderAirlineFleet();
     }
   }
@@ -1435,11 +1348,33 @@ window.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("mouseover", function (e) {
     let target = e.target;
     let reason = null;
+
     while (target && target !== document.body) {
-      reason = target.getAttribute("data-locked-reason");
-      if (reason) break;
+
+      // Case 1: Element is inside a panel that is currently locked
+      const isInsideLockedPanel = target.closest(".panel-locked") !== null;
+
+      // Case 2: Element is a locked asset card
+      const isLockedCard = target.classList &&
+        (target.classList.contains("yacht-card-locked") ||
+         target.classList.contains("sector-mgr-locked") ||
+         target.classList.contains("asset-card-locked"));
+
+      if (isInsideLockedPanel || isLockedCard) {
+        reason = target.getAttribute("data-locked-reason");
+        if (reason) break;
+      }
+
+      // Case 3: Element is a disabled button with a lock reason
+      // (e.g. cannot afford upgrade — valid regardless of panel lock state)
+      if (target.tagName === "BUTTON" && target.disabled) {
+        reason = target.getAttribute("data-locked-reason");
+        if (reason) break;
+      }
+
       target = target.parentElement;
     }
+
     if (reason) {
       lockTooltip.textContent   = "🔒 " + reason;
       lockTooltip.style.display = "block";
