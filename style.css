@@ -1964,6 +1964,8 @@ body.theme-dark .modal-header { background: linear-gradient(135deg, #0d200d, #15
 body.theme-dark #uncle-popup { background: #111f11; border: 2px solid #2e5c2e; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
 body.theme-dark .uncle-popup-inner { background: #111f11; }
 body.theme-dark .uncle-speech-bubble { background: #0e1e0e; color: #c8e6c9; border: 1px solid #1e3a1e; }
+body.theme-dark .uncle-name-tag { color: #ffd700; }
+body.theme-dark #uncle-dialogue-text { color: #d4e8d4; }
 body.theme-dark .richlist-entry { background: #0e1e0e; border-bottom: 1px solid #1a2e1a; color: #c8e6c9; }
 body.theme-dark .richlist-entry.beaten { background: #122112; }
 body.theme-dark #flex-section { background: #111f11; border-color: #1e3a1e; }
