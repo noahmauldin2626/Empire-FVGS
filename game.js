@@ -158,6 +158,13 @@ let powerClickCoolTimer = null;  // the setTimeout handle for cooldown expiry
 let mouseHoldTimer      = null;  // setTimeout before mouse-hold activates Power Click
 let mouseHoldActivated  = false; // true if mouse hold triggered Power Click this press
 
+// ── GAME LOOP INTERVAL IDs ─────────────────────────────────────
+// Stored so they can be cleared on Restart (prevents interval stacking).
+let mainLoopInterval   = null;
+let stockFlucInterval  = null;
+let cryptoFlucInterval = null;
+let autoSaveInterval   = null;
+
 // ── FORMATTING ─────────────────────────────────────────────────
 
 // Turns a big number into a readable string with a suffix.
@@ -225,7 +232,7 @@ function saveToCloud() {
   showSaveIndicator("saving");
 
   window.db
-    .ref("saves/" + activeUsername + "/saveData")
+    .ref("saves/" + activeUsername + "/saveData_v2")
     .set(JSON.stringify(gameState))
     .then(function () {
       showSaveIndicator("cloud");
@@ -343,10 +350,8 @@ function fillMissingFields() {
 // Tries to load the player's save. Returns true if a save was found.
 //
 // Checks in this order:
-//   1. Firebase cloud (most up-to-date — works on any device)
+//   1. Firebase cloud (most up-to-date -- works on any device)
 //   2. localStorage with the username-based key (offline fallback)
-//   3. localStorage with the OLD pre-username key "empire_save_v1"
-//      (catches saves created before the username system was added)
 //
 // After every successful load, fillMissingFields() is called to
 // safely handle any fields that didn't exist in older save files.
@@ -356,7 +361,7 @@ async function loadGame() {
   if (window.db && activeUsername) {
     try {
       const snapshot = await window.db
-        .ref("saves/" + activeUsername + "/saveData")
+        .ref("saves/" + activeUsername + "/saveData_v2")
         .get();
 
       if (snapshot.exists()) {
@@ -385,25 +390,6 @@ async function loadGame() {
     }
   } catch (err) {
     console.warn("Local save load failed:", err);
-  }
-
-  // ── 3. Try the old pre-username save key ─────────────────────
-  // Saves created before the username system used the plain key
-  // "empire_save_v1". If found, we migrate it to the new key.
-  try {
-    const legacyData = localStorage.getItem("empire_save_v1");
-    if (legacyData) {
-      const parsed = JSON.parse(legacyData);
-      Object.assign(gameState, parsed);
-      fillMissingFields();
-      // Migrate: write under the new username key right away
-      saveToLocal();
-      console.log("✅ Migrated legacy save to new username key!");
-      showSaveIndicator("local");
-      return true;
-    }
-  } catch (err) {
-    console.warn("Legacy save check failed:", err);
   }
 
   return false; // no save found anywhere — this is a brand new player
@@ -771,11 +757,11 @@ function startPowerClick() {
 
   // Auto-stop after 15 seconds
   powerClickTimeout = setTimeout(function () {
-    stopPowerClick(true);
+    stopPowerClick();
   }, 15000);
 }
 
-function stopPowerClick(triggerCooldown) {
+function stopPowerClick() {
   if (!powerClickActive) return;
   powerClickActive = false;
   clearInterval(powerClickInterval);
@@ -1268,15 +1254,16 @@ function startGame() {
   }
 
   // ── Game loops ───────────────────────────────────────────────
-  setInterval(mainGameLoop, 1000);             // main loop: every 1 second
+  // Clear any existing intervals first to prevent stacking on Restart.
+  clearInterval(mainLoopInterval);
+  clearInterval(stockFlucInterval);
+  clearInterval(cryptoFlucInterval);
+  clearInterval(autoSaveInterval);
 
-  // Update 3: stocks now fluctuate every 2s (was 5s before Update 3)
-  setInterval(fluctuateStockPrices, 2000);
-
-  // Update 3: crypto fluctuates every 3s (separate, more frequent ticker)
-  setInterval(fluctuateCryptoPrices, 3000);
-
-  setInterval(saveGame, 30000);               // auto-save every 30 seconds
+  mainLoopInterval   = setInterval(mainGameLoop, 1000);        // main loop: every 1 second
+  stockFlucInterval  = setInterval(fluctuateStockPrices, 2000); // Update 3: was 5s
+  cryptoFlucInterval = setInterval(fluctuateCryptoPrices, 3000); // Update 3: separate ticker
+  autoSaveInterval   = setInterval(saveGame, 30000);           // auto-save every 30 seconds
 
   // ── Intro dialogue (new games only) ──────────────────────────
   if (!gameState.hasSeenIntro) {
@@ -1348,7 +1335,7 @@ window.addEventListener("DOMContentLoaded", function () {
         mouseHoldTimer = null;
         // Held < 150ms — Power Click never started; let the click event fire normally
       } else if (powerClickActive) {
-        stopPowerClick(true);
+        stopPowerClick();
       }
     }
 
@@ -1423,7 +1410,7 @@ window.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("keyup", function (e) {
     if (e.key === "Enter" || e.key === " ") {
       heldKeys.delete(e.key);
-      stopPowerClick(true); // releasing key triggers cooldown
+      stopPowerClick(); // releasing key triggers cooldown
     }
   });
 
