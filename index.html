@@ -17,7 +17,7 @@
 <div id="username-screen">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.9 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 6.0 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -88,7 +88,7 @@
 <div id="intro-screen" style="display:none;">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.9 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 6.0 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -180,7 +180,7 @@
   <div class="modal-inner modal-changelog">
 
     <div class="modal-header">
-      <span>📋 What's New — Update 5.9</span>
+      <span>📋 What's New — Update 6.0</span>
       <!-- X button calls dismissChangelog() in game.js -->
       <button class="modal-close-btn" onclick="dismissChangelog()">✕</button>
     </div>
@@ -188,32 +188,22 @@
     <div class="modal-body">
       <p class="changelog-subtitle">by Flaco's Video Game Studio</p>
 
-      <p style="background:#fff3e0; border:1px solid #ffb74d;
-                border-radius:8px; padding:0.7rem 0.9rem;
-                font-size:0.82rem; color:#e65100;
-                margin-bottom:0.8rem; font-weight:700;">
-        Update 5.9 required a fresh start due to a major rich list
-        overhaul. Your username and password are unchanged.
-        Sorry for the reset — the new list is worth it.
-      </p>
-
       <ul class="changelog-list">
         <li>
-          <strong>Rich List Overhaul</strong> —
-          50 rivals. One unified list. No tier splits. All names
-          are real-world billionaire parodies scaled to actual net
-          worth. Starts at $50K. Ends at $1 Trillion.
-          Elon Muskrat is the final boss.
+          <strong>Bug Fix: Restart Interval Stacking</strong> —
+          Restarting the game multiple times no longer causes game
+          loops to multiply. Each restart now cleanly replaces the
+          previous intervals.
         </li>
         <li>
-          <strong>Legacy Mode</strong> —
-          Beat Elon Muskrat and choose to keep going instead of
-          restarting. No ceiling. Accumulate forever.
+          <strong>Bug Fix: Sector Manager Salaries</strong> —
+          Sector manager salary deductions can no longer push your
+          cash below zero.
         </li>
         <li>
-          <strong>Portfolio Max Buy and Sell</strong> —
-          Max Buy and Max Sell on every position in the Portfolio
-          tab. React instantly to big price moves.
+          <strong>Bug Fix: Power Click Cleanup</strong> —
+          Internal cleanup to the Power Click stop logic. No
+          behaviour change — just tidier code under the hood.
         </li>
       </ul>
       <button class="btn btn-buy" onclick="dismissChangelog()"
