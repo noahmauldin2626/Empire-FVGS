@@ -33,7 +33,7 @@
 // Update this string each time you ship a new update.
 // The changelog modal auto-shows once when this doesn't match
 // what's stored in gameState.lastSeenChangelog.
-const CHANGELOG_VERSION = "5_6_3";
+const CHANGELOG_VERSION = "6_0";
 
 // ── ACTIVE USERNAME ────────────────────────────────────────────
 // Holds the name the player typed on the username screen.
@@ -41,15 +41,11 @@ const CHANGELOG_VERSION = "5_6_3";
 // Every save/load uses this name so each player has their own slot.
 let activeUsername = "";
 
-// ── LOGIN TWO-PASS STATE ────────────────────────────────────────
-// handleUsernameSubmit() uses a two-pass design:
-//   Pass 1 — loads save + password from Firebase, shows the password field, stops.
-//   Pass 2 — reads what the player typed, validates or saves the password, proceeds.
-// These three variables hold the data between passes so the async results
-// from Pass 1 are still available when Pass 2 runs.
-let loginPending = false;   // true once Pass 1 has shown the password field
-let loginHasSave = false;   // whether an existing save was found (cached from Pass 1)
-let loginSavedPw = null;    // the stored password string, or null if none (cached from Pass 1)
+// ── LOGIN STATE ─────────────────────────────────────────────────
+// handleUsernameSubmit() is single-pass: username + password are
+// submitted together, Firebase is checked once, and the player
+// proceeds immediately. The password is persisted in localStorage
+// so returning players have the field pre-filled on next visit.
 
 // ── GAME STATE ─────────────────────────────────────────────────
 // This one object holds ALL the live data for the current game.
@@ -92,7 +88,7 @@ const gameState = {
   // Tracks total cash spent on each stock/coin across all buy transactions.
   // Used to calculate profit/loss on the stats display in each card.
   // Keys are asset IDs (e.g. "pineapple", "bytecoin").
-  // Values are cumulative dollar amounts spent (never decremented on sell).
+  // Values are cumulative dollar amounts spent, reduced proportionally on sell.
   stockSpent: {},        // { stockId: totalCashSpent }
   coinSpent:  {},        // { coinId:  totalCashSpent }
 
@@ -122,7 +118,7 @@ const gameState = {
   managerTimerAccumulator: 0,   // seconds accumulated toward next auto-tap
 
   // --- Rich List ---
-  currentRank:    11,    // 11 = unranked (below #10)
+  currentRank:    51,    // 51 = unranked (below rank 50)
   ranksAchieved:  [],    // which rank numbers have already triggered dialogue
 
   // --- Tracking ---
@@ -133,16 +129,41 @@ const gameState = {
 
   // --- Changelog (Update 3) ---
   lastSeenChangelog: "",  // set to CHANGELOG_VERSION after the player sees the modal
+
+  // --- Bills (Update 5.6.4) ---
+  totalBillsPaid:   0,    // lifetime total cash deducted by operating bills
+  hasSeenFirstBill: false, // true after the first-bill tutorial fires
+
+  // --- Lifestyle & Silly Purchases (Update 5.8 — vanity only, no income effect) ---
+  lifestylePurchases:       [],    // array of purchased item id strings (lifestyle + silly)
+  hasSeenFirstLifestyle:    false,
+  hasSeenFirstSilly:        false,
+  hasSeenFirstVacation:     false,
+
+  // --- Theme (Update 5.8) ---
+  theme: "dark",   // "dark" or "light"
+
+  // --- Legacy Mode (Update 5.9) ---
+  legacyMode: false,  // true when player beats rank 1 and chooses "Keep Going"
 };
 
 // ── POWER CLICK STATE ──────────────────────────────────────────
 // Tracks whether Power Click is currently active or cooling down.
 // Hold Enter or Space to activate — fires clicks automatically for 15s.
-let powerClickActive   = false; // true while the key is held and firing
-let powerClickCooldown = false; // true during the 3-sec cooldown
-let powerClickInterval = null;  // the setInterval handle for rapid clicks
-let powerClickTimeout  = null;  // the setTimeout handle for the 10-sec limit
-let powerClickCoolTimer = null; // the setTimeout handle for cooldown expiry
+let powerClickActive    = false; // true while the key is held and firing
+let powerClickCooldown  = false; // true during the 3-sec cooldown
+let powerClickInterval  = null;  // the setInterval handle for rapid clicks
+let powerClickTimeout   = null;  // the setTimeout handle for the 15-sec limit
+let powerClickCoolTimer = null;  // the setTimeout handle for cooldown expiry
+let mouseHoldTimer      = null;  // setTimeout before mouse-hold activates Power Click
+let mouseHoldActivated  = false; // true if mouse hold triggered Power Click this press
+
+// ── GAME LOOP INTERVAL IDs ─────────────────────────────────────
+// Stored so they can be cleared on Restart (prevents interval stacking).
+let mainLoopInterval   = null;
+let stockFlucInterval  = null;
+let cryptoFlucInterval = null;
+let autoSaveInterval   = null;
 
 // ── FORMATTING ─────────────────────────────────────────────────
 
@@ -163,7 +184,7 @@ function formatMoney(amount) {
 // Each username gets a unique key so saves never collide.
 // Example: username "flaco" → key "empire_save_v1_flaco"
 function getSaveKey() {
-  return "empire_save_v1_" + (activeUsername || "default");
+  return "empire_save_v2_" + (activeUsername || "default");
 }
 
 // ── SAVE INDICATOR ─────────────────────────────────────────────
@@ -211,7 +232,7 @@ function saveToCloud() {
   showSaveIndicator("saving");
 
   window.db
-    .ref("saves/" + activeUsername + "/saveData")
+    .ref("saves/" + activeUsername + "/saveData_v2")
     .set(JSON.stringify(gameState))
     .then(function () {
       showSaveIndicator("cloud");
@@ -296,6 +317,20 @@ function fillMissingFields() {
   if (!gameState.sectorManagers)                   gameState.sectorManagers       = {};
   if (gameState.airlineFleetUnlocked === undefined) gameState.airlineFleetUnlocked = false;
 
+  // --- Fields added in Update 5.6.4 ---
+  if (gameState.totalBillsPaid  === undefined) gameState.totalBillsPaid  = 0;
+  if (gameState.hasSeenFirstBill === undefined) gameState.hasSeenFirstBill = false;
+
+  // --- Fields added in Update 5.8 ---
+  if (!gameState.lifestylePurchases)                   gameState.lifestylePurchases    = [];
+  if (gameState.hasSeenFirstLifestyle === undefined)   gameState.hasSeenFirstLifestyle  = false;
+  if (gameState.hasSeenFirstSilly     === undefined)   gameState.hasSeenFirstSilly      = false;
+  if (gameState.hasSeenFirstVacation  === undefined)   gameState.hasSeenFirstVacation   = false;
+  if (!gameState.theme)                                gameState.theme                  = "dark";
+
+  // --- Fields added in Update 5.9 ---
+  if (gameState.legacyMode === undefined) gameState.legacyMode = false;
+
   // Update 5.5 guard — seeds prices for any NEW coins added to CRYPTOS
   // that are missing from an existing save's cryptoPrices object.
   // Runs for returning players whose saves pre-date the new coins.
@@ -315,10 +350,8 @@ function fillMissingFields() {
 // Tries to load the player's save. Returns true if a save was found.
 //
 // Checks in this order:
-//   1. Firebase cloud (most up-to-date — works on any device)
+//   1. Firebase cloud (most up-to-date -- works on any device)
 //   2. localStorage with the username-based key (offline fallback)
-//   3. localStorage with the OLD pre-username key "empire_save_v1"
-//      (catches saves created before the username system was added)
 //
 // After every successful load, fillMissingFields() is called to
 // safely handle any fields that didn't exist in older save files.
@@ -328,7 +361,7 @@ async function loadGame() {
   if (window.db && activeUsername) {
     try {
       const snapshot = await window.db
-        .ref("saves/" + activeUsername + "/saveData")
+        .ref("saves/" + activeUsername + "/saveData_v2")
         .get();
 
       if (snapshot.exists()) {
@@ -357,25 +390,6 @@ async function loadGame() {
     }
   } catch (err) {
     console.warn("Local save load failed:", err);
-  }
-
-  // ── 3. Try the old pre-username save key ─────────────────────
-  // Saves created before the username system used the plain key
-  // "empire_save_v1". If found, we migrate it to the new key.
-  try {
-    const legacyData = localStorage.getItem("empire_save_v1");
-    if (legacyData) {
-      const parsed = JSON.parse(legacyData);
-      Object.assign(gameState, parsed);
-      fillMissingFields();
-      // Migrate: write under the new username key right away
-      saveToLocal();
-      console.log("✅ Migrated legacy save to new username key!");
-      showSaveIndicator("local");
-      return true;
-    }
-  } catch (err) {
-    console.warn("Legacy save check failed:", err);
   }
 
   return false; // no save found anywhere — this is a brand new player
@@ -420,7 +434,7 @@ function playAgain() {
     passiveIncome: 0, playerName: "", playerGender: "",
     chapter: 0, ownedProperties: {}, ownedStocks: {},
     ownedBusinesses: {}, stockPrices: {}, managerLevel: 0,
-    managerTimerAccumulator: 0, currentRank: 11,
+    managerTimerAccumulator: 0, currentRank: 51,
     ranksAchieved: [], startTime: null, totalClicks: 0,
     hasSeenIntro: false, totalManagerSalaryPaid: 0,
     // Update 3 keys:
@@ -445,12 +459,36 @@ function playAgain() {
     // Update 5.6 keys:
     ownedAirlines:        {},
     sectorManagers:       {},
-    airlineFleetUnlocked: false
+    airlineFleetUnlocked: false,
+
+    // Update 5.6.4 keys:
+    totalBillsPaid:   0,
+    hasSeenFirstBill: false,
+
+    // Update 5.8 keys:
+    lifestylePurchases:    [],
+    hasSeenFirstLifestyle: false,
+    hasSeenFirstSilly:     false,
+    hasSeenFirstVacation:  false,
+    theme:                 "dark",
+
+    // Update 5.9:
+    legacyMode: false,
   });
 
   document.getElementById("win-screen").style.display   = "none";
   document.getElementById("game-screen").style.display  = "none";
   document.getElementById("intro-screen").style.display = "flex";
+}
+
+function keepGoing() {
+  const winScreen = document.getElementById("win-screen");
+  if (winScreen) winScreen.style.display = "none";
+  gameState.legacyMode = true;
+  saveGame();
+  const banner = document.getElementById("legacy-banner");
+  if (banner) banner.style.display = "flex";
+  triggerDialogue("legacy_mode");
 }
 
 // ── STATS RECALCULATION ────────────────────────────────────────
@@ -463,14 +501,19 @@ function recalculateStats() {
   const propClickBonus     = calculatePropertyClickBonus();
   const businessClickBonus = calculateBusinessClickBonus();
   const yachtClickBonus    = calculateYachtBusinessClickBonus(); // Update 4
-  gameState.clickValue = 1 + propClickBonus + businessClickBonus + yachtClickBonus;
-
   // --- Sector Manager Multipliers (Update 5.6) ---
   const mProp    = getSectorMultiplier("real_estate");
   const mMarket  = getSectorMultiplier("market");
   const mBiz     = getSectorMultiplier("business");
   const mAirline = getSectorMultiplier("airline");
   const mYacht   = getSectorMultiplier("yacht");
+
+  // Apply sector multipliers to click value (Bug Fix 5.9)
+  // yachtClickBonus uses mBiz — Yacht Empire is categorised under the business sector
+  gameState.clickValue = 1
+    + (propClickBonus     * mProp)
+    + (businessClickBonus * mBiz)
+    + (yachtClickBonus    * mBiz);
 
   // --- Passive Income Per Second (multiplied by sector managers) ---
   const propIncome       = calculatePropertyIncome()       * mProp;
@@ -497,6 +540,35 @@ function recalculateStats() {
   // Note: Cars (ownedCars) and Home (homeTier) are intentionally excluded — vanity only.
 }
 
+// ── BILLS SYSTEM (Update 5.6.4) ────────────────────────────────
+
+// Returns the total operating bills per second across all sectors.
+// Deducted from cash each tick in mainGameLoop — cash never goes below 0.
+function calculateTotalBills() {
+  const mProp    = getSectorMultiplier("real_estate");
+  const mMarket  = getSectorMultiplier("market");
+  const mBiz     = getSectorMultiplier("business");
+  const mAirline = getSectorMultiplier("airline");
+  const mYacht   = getSectorMultiplier("yacht");
+
+  // Property taxes & maintenance (15% of property income)
+  const propBills     = calculatePropertyIncome()      * mProp    * 0.15;
+  // Brokerage & trading fees (8% of stock dividends)
+  const stockBills    = calculateStockDividends()      * mMarket  * 0.08;
+  // Exchange fees (5% of crypto dividends)
+  const cryptoBills   = calculateCryptoDividends()     * mMarket  * 0.05;
+  // Business operating costs (20% of business income)
+  const bizBills      = calculateBusinessIncome()      * mBiz     * 0.20;
+  // Yacht business overhead (18% of yacht business income)
+  const yachtBizBills = calculateYachtBusinessIncome() * mBiz     * 0.18;
+  // Yacht fleet maintenance (25% of yacht fleet income)
+  const yachtBills    = calculateYachtFleetIncome()    * mYacht   * 0.25;
+  // Airline fleet operations (22% of airline fleet income)
+  const airlineBills  = calculateAirlineFleetIncome()  * mAirline * 0.22;
+
+  return propBills + stockBills + cryptoBills + bizBills + yachtBizBills + yachtBills + airlineBills;
+}
+
 // ── MAIN GAME LOOP ─────────────────────────────────────────────
 
 // Runs every second. Handles passive income, manager, unlocks, UI.
@@ -506,6 +578,19 @@ function mainGameLoop() {
   if (gameState.passiveIncome > 0) {
     gameState.cash        += gameState.passiveIncome;
     gameState.totalEarned += gameState.passiveIncome;
+  }
+
+  // Deduct operating bills each second (Update 5.6.4)
+  const bills = calculateTotalBills();
+  if (bills > 0) {
+    gameState.cash = Math.max(0, gameState.cash - bills);
+    gameState.totalBillsPaid = (gameState.totalBillsPaid || 0) + bills;
+
+    // Fire the first-bill tutorial once bills are non-trivial and intro is done
+    if (!gameState.hasSeenFirstBill && bills >= 1 && gameState.hasSeenIntro) {
+      gameState.hasSeenFirstBill = true;
+      triggerDialogue("first_bill");
+    }
   }
 
   processManagerTap(1);
@@ -529,7 +614,12 @@ function checkChapterUnlocks() {
     gameState.airlineFleetUnlocked = true;
     saveGame();
     const airlineEl = document.getElementById("airline-fleet-section");
-    if (airlineEl) { airlineEl.classList.remove("panel-locked"); renderAirlineFleet(); }
+    if (airlineEl) {
+      airlineEl.classList.remove("panel-locked");
+      const airlineHeader = airlineEl.querySelector(".panel-header");
+      if (airlineHeader) airlineHeader.removeAttribute("data-locked-reason");
+      renderAirlineFleet();
+    }
   }
 }
 
@@ -542,6 +632,8 @@ function unlockChapter(chapterNum) {
     const el = document.getElementById("right-panel");
     if (el) {
       el.classList.remove("panel-locked");
+      const header = el.querySelector(".panel-header");
+      if (header) header.removeAttribute("data-locked-reason");
       renderStocks();
       renderCrypto(); // Update 3: render crypto tab content too
     }
@@ -553,7 +645,12 @@ function unlockChapter(chapterNum) {
 
   if (chapterNum === 3) {
     const el = document.getElementById("businesses-section");
-    if (el) { el.classList.remove("panel-locked"); renderBusinesses(); }
+    if (el) {
+      el.classList.remove("panel-locked");
+      const header = el.querySelector(".panel-header");
+      if (header) header.removeAttribute("data-locked-reason");
+      renderBusinesses();
+    }
     triggerDialogue("ch3_unlock");
   }
 
@@ -569,7 +666,12 @@ function unlockChapter(chapterNum) {
   // Update 4: Yacht Fleet panel unlocks at $100M net worth
   if (chapterNum === 5) {
     const yachtEl = document.getElementById("yacht-fleet-section");
-    if (yachtEl) { yachtEl.classList.remove("panel-locked"); renderYachtFleet(); }
+    if (yachtEl) {
+      yachtEl.classList.remove("panel-locked");
+      const header = yachtEl.querySelector(".panel-header");
+      if (header) header.removeAttribute("data-locked-reason");
+      renderYachtFleet();
+    }
     // Note: Airline Fleet has its own $50M unlock via checkChapterUnlocks() — not here
     triggerDialogue("ch5_unlock");
   }
@@ -577,13 +679,19 @@ function unlockChapter(chapterNum) {
 
 // ── RICH LIST RANK CHECKS ──────────────────────────────────────
 
+// Update 5.9: Milestone-only dialogues — 50 rivals, only 10 milestones fire.
 const RANK_DIALOGUES = {
-  10: "rank_10", 9: "rank_9", 8: "rank_8", 7: "rank_7",
-  6: "rank_6",   5: "rank_5", 4: "rank_4", 3: "rank_3",
-  2: "rank_2",   0: "win",
-  // Update 4: Super-Tier ranks use string keys (JS coerces negative ints to strings)
-  "-1": "rank_-1", "-2": "rank_-2",
-  "-3": "rank_-3", "-4": "rank_-4"
+  50: "rank_50",
+  40: "rank_40",
+  30: "rank_30",
+  20: "rank_20",
+  15: "rank_15",
+  10: "rank_10",
+  5:  "rank_5",
+  4:  "rank_4",
+  3:  "rank_3",
+  2:  "rank_2",
+  0:  "win"
 };
 
 function checkRichListRank() {
@@ -597,7 +705,7 @@ function checkRichListRank() {
       if (RANK_DIALOGUES[newRank]) triggerDialogue(RANK_DIALOGUES[newRank]);
     }
 
-    if (newRank === 0) setTimeout(showWinScreen, 3000);
+    if (newRank === 0 && !gameState.legacyMode) setTimeout(showWinScreen, 3000);
 
     renderRichList();
   }
@@ -647,13 +755,13 @@ function startPowerClick() {
     }
   }, 100);
 
-  // Auto-stop after 10 seconds
+  // Auto-stop after 15 seconds
   powerClickTimeout = setTimeout(function () {
-    stopPowerClick(true);
-  }, 10000);
+    stopPowerClick();
+  }, 15000);
 }
 
-function stopPowerClick(triggerCooldown) {
+function stopPowerClick() {
   if (!powerClickActive) return;
   powerClickActive = false;
   clearInterval(powerClickInterval);
@@ -680,7 +788,7 @@ function updatePowerClickUI() {
     indicator.textContent = "❄️ POWER CLICK COOLING DOWN...";
     indicator.className   = "power-click-indicator power-click-cooldown";
   } else {
-    indicator.textContent = "Hold ENTER or SPACE for Power Click";
+    indicator.textContent = "Hold ENTER, SPACE or the button for Power Click";
     indicator.className   = "power-click-indicator power-click-ready";
   }
 }
@@ -720,10 +828,14 @@ function updateUI() {
   setText("display-click",        formatMoney(gameState.clickValue) + "/click");
   setText("display-click-center", formatMoney(gameState.clickValue));
 
+  // Update 5.6.4: Bills display (red, shows operating costs per second)
+  const bills = calculateTotalBills();
+  setText("display-bills", "−" + formatMoney(bills) + "/sec");
+
   const rank = gameState.currentRank;
-  const rankDisplay = rank === 11 ? "Unranked"
-    : rank === 0 ? "👑 #1!"
-    : rank < 0   ? "S" + Math.abs(rank)  // Update 4: Super-Tier display
+  const rankDisplay =
+    rank === 51 || rank > 50 ? "Unranked"
+    : rank === 0             ? "👑 #1!"
     : "#" + rank;
   setText("display-rank", rankDisplay);
 
@@ -745,6 +857,7 @@ function updateUI() {
   renderManager();
 
   renderRichList();
+  renderFlex();
 }
 
 function setText(id, text) {
@@ -816,7 +929,7 @@ async function deletePassword(username) {
 }
 
 async function deleteAccount(username) {
-  localStorage.removeItem("empire_save_v1_" + username);
+  localStorage.removeItem("empire_save_v2_" + username);
   localStorage.removeItem("empire_password_" + username);
   if (window.db && username) {
     try {
@@ -844,6 +957,12 @@ function openSettings() {
     }
   });
 
+  // Sync theme button active state
+  const darkBtn  = document.getElementById("theme-btn-dark");
+  const lightBtn = document.getElementById("theme-btn-light");
+  if (darkBtn)  darkBtn.classList.toggle("theme-btn-active",  gameState.theme === "dark");
+  if (lightBtn) lightBtn.classList.toggle("theme-btn-active", gameState.theme !== "dark");
+
   const modal = document.getElementById("settings-modal");
   if (modal) modal.style.display = "flex";
 }
@@ -851,6 +970,28 @@ function openSettings() {
 function closeSettings() {
   const modal = document.getElementById("settings-modal");
   if (modal) modal.style.display = "none";
+}
+
+// ── THEME SYSTEM (Update 5.8) ────────────────────────────────────
+function setTheme(themeName) {
+  gameState.theme = themeName;
+  applyTheme(themeName);
+  saveGame();
+
+  const darkBtn  = document.getElementById("theme-btn-dark");
+  const lightBtn = document.getElementById("theme-btn-light");
+  if (darkBtn)  darkBtn.classList.toggle("theme-btn-active",  themeName === "dark");
+  if (lightBtn) lightBtn.classList.toggle("theme-btn-active", themeName === "light");
+}
+
+function applyTheme(themeName) {
+  if (themeName === "light") {
+    document.body.classList.add("theme-light");
+    document.body.classList.remove("theme-dark");
+  } else {
+    document.body.classList.add("theme-dark");
+    document.body.classList.remove("theme-light");
+  }
 }
 
 // Called by each slider's oninput handler. Saves value immediately.
@@ -869,12 +1010,12 @@ async function changePassword() {
 
   const newPw = input.value.trim();
   if (!newPw) {
-    await deletePassword(activeUsername);
-    if (feedback) { feedback.textContent = "Password removed. Account is now open."; feedback.style.color = "#388e3c"; }
-  } else {
-    await savePassword(activeUsername, newPw);
-    if (feedback) { feedback.textContent = "Password updated successfully!"; feedback.style.color = "#388e3c"; }
+    if (feedback) { feedback.textContent = "Password cannot be blank."; feedback.style.color = "#c62828"; }
+    setTimeout(() => { if (feedback) feedback.textContent = ""; }, 3000);
+    return;
   }
+  await savePassword(activeUsername, newPw);
+  if (feedback) { feedback.textContent = "Password updated successfully!"; feedback.style.color = "#388e3c"; }
   input.value = "";
   setTimeout(() => { if (feedback) feedback.textContent = ""; }, 3000);
 }
@@ -936,52 +1077,8 @@ async function handleUsernameSubmit() {
   }
 
   const passwordInput = document.getElementById("password-input");
-  const pwWrap        = document.getElementById("password-field-wrap");
-  const pwLabel       = document.getElementById("password-label");
-  const pwHint        = document.getElementById("password-hint");
+  const enteredPw     = passwordInput ? passwordInput.value.trim() : "";
 
-  // ── PASS 2: password field already visible — act on what was typed ──
-  if (loginPending) {
-    const enteredPw = passwordInput ? passwordInput.value.trim() : "";
-
-    if (loginHasSave && loginSavedPw) {
-      // Scenario C — returning player WITH a saved password: require it
-      if (!enteredPw) {
-        showUsernameError("This account has a password. Please enter it below.");
-        return;
-      }
-      if (enteredPw !== loginSavedPw) {
-        showUsernameError("Incorrect password. Try again.");
-        if (passwordInput) { passwordInput.value = ""; passwordInput.focus(); }
-        return;
-      }
-      // Correct — fall through to proceed
-
-    } else if (loginHasSave && !loginSavedPw) {
-      // Scenario B — returning player, no password yet: require one now
-      if (!enteredPw) {
-        showUsernameError("Please set a password to protect your account.");
-        return;
-      }
-      await savePassword(clean, enteredPw);
-      showToast("Password set! Your account is now protected.");
-
-    } else {
-      // Scenario A — new player: require a password before entering
-      if (!enteredPw) {
-        showUsernameError("Please choose a password to protect your account.");
-        return;
-      }
-      await savePassword(clean, enteredPw);
-    }
-
-    // All three scenarios: done validating — enter the game
-    loginPending = false;
-    proceedToGame(loginHasSave);
-    return;
-  }
-
-  // ── PASS 1: first submit — load save and password, then show the field ──
   showUsernameError("");
   const loadingEl = document.getElementById("username-loading");
   const submitBtn = document.getElementById("username-submit-btn");
@@ -997,29 +1094,42 @@ async function handleUsernameSubmit() {
   if (loadingEl) loadingEl.style.display = "none";
   if (submitBtn) submitBtn.disabled = false;
 
-  // Cache results for Pass 2
-  loginHasSave = hasSave;
-  loginSavedPw = savedPw;
-  loginPending  = true;
-
-  // Show the password field with the correct label for each scenario
   if (hasSave && savedPw) {
-    // Scenario C — password required
-    if (pwLabel) pwLabel.textContent = "Enter your password:";
-    if (pwHint)  pwHint.textContent  = "Your account is password protected.";
+    // Scenario C — returning player WITH a saved password: require it
+    if (!enteredPw) {
+      showUsernameError("This account has a password. Please enter it.");
+      if (passwordInput) passwordInput.focus();
+      return;
+    }
+    if (enteredPw !== savedPw) {
+      showUsernameError("Incorrect password. Try again.");
+      if (passwordInput) { passwordInput.value = ""; passwordInput.focus(); }
+      return;
+    }
+    // Correct — persist locally so the field auto-fills next visit
+    localStorage.setItem("empire_password_" + clean, enteredPw);
+
   } else if (hasSave && !savedPw) {
-    // Scenario B — returning player, no password on file
-    if (pwLabel) pwLabel.textContent = "Set a password (required):";
-    if (pwHint)  pwHint.textContent  = "Your account needs a password. Choose one to continue.";
+    // Scenario B — returning player, no password on file yet: require one now
+    if (!enteredPw) {
+      showUsernameError("Please set a password to protect your account.");
+      if (passwordInput) passwordInput.focus();
+      return;
+    }
+    await savePassword(clean, enteredPw);
+    showToast("Password set! Your account is now protected.");
+
   } else {
-    // Scenario A — new player
-    if (pwLabel) pwLabel.textContent = "Set a password (required):";
-    if (pwHint)  pwHint.textContent  = "Choose a password to protect your save.";
+    // Scenario A — new player: require a password before entering
+    if (!enteredPw) {
+      showUsernameError("Please choose a password to protect your new account.");
+      if (passwordInput) passwordInput.focus();
+      return;
+    }
+    await savePassword(clean, enteredPw);
   }
 
-  if (pwWrap) pwWrap.style.display = "block";
-  if (passwordInput) passwordInput.focus();
-  // Do NOT call proceedToGame() here — wait for Pass 2 (next submit)
+  proceedToGame(hasSave);
 }
 
 // ── CHARACTER SELECT ───────────────────────────────────────────
@@ -1073,8 +1183,10 @@ function startGame() {
       // Not yet unlocked — keep the lock class on
       rightPanel.classList.add("panel-locked");
     } else {
-      // Unlocked — remove the lock class and render both tabs
+      // Unlocked — remove the lock class, strip stale tooltip attr, render tabs
       rightPanel.classList.remove("panel-locked");
+      const rpHeader = rightPanel.querySelector(".panel-header");
+      if (rpHeader) rpHeader.removeAttribute("data-locked-reason");
       renderStocks();
       renderCrypto(); // Update 3: render crypto content alongside stocks
     }
@@ -1087,6 +1199,8 @@ function startGame() {
       bizPanel.classList.add("panel-locked");
     } else {
       bizPanel.classList.remove("panel-locked");
+      const bizHeader = bizPanel.querySelector(".panel-header");
+      if (bizHeader) bizHeader.removeAttribute("data-locked-reason");
       renderBusinesses();
     }
   }
@@ -1107,6 +1221,8 @@ function startGame() {
       yachtPanel.classList.add("panel-locked");
     } else {
       yachtPanel.classList.remove("panel-locked");
+      const yachtHeader = yachtPanel.querySelector(".panel-header");
+      if (yachtHeader) yachtHeader.removeAttribute("data-locked-reason");
       renderYachtFleet();
     }
   }
@@ -1118,6 +1234,8 @@ function startGame() {
       airlinePanel.classList.add("panel-locked");
     } else {
       airlinePanel.classList.remove("panel-locked");
+      const airlineHeader = airlinePanel.querySelector(".panel-header");
+      if (airlineHeader) airlineHeader.removeAttribute("data-locked-reason");
       renderAirlineFleet();
     }
   }
@@ -1127,17 +1245,25 @@ function startGame() {
 
   // Update 5.1: initialise Power Click indicator to "ready" state
   updatePowerClickUI();
+  applyTheme(gameState.theme);
+
+  // Update 5.9: restore legacy banner if player is in legacy mode
+  const legacyBanner = document.getElementById("legacy-banner");
+  if (legacyBanner) {
+    legacyBanner.style.display = gameState.legacyMode ? "flex" : "none";
+  }
 
   // ── Game loops ───────────────────────────────────────────────
-  setInterval(mainGameLoop, 1000);             // main loop: every 1 second
+  // Clear any existing intervals first to prevent stacking on Restart.
+  clearInterval(mainLoopInterval);
+  clearInterval(stockFlucInterval);
+  clearInterval(cryptoFlucInterval);
+  clearInterval(autoSaveInterval);
 
-  // Update 3: stocks now fluctuate every 2s (was 5s before Update 3)
-  setInterval(fluctuateStockPrices, 2000);
-
-  // Update 3: crypto fluctuates every 3s (separate, more frequent ticker)
-  setInterval(fluctuateCryptoPrices, 3000);
-
-  setInterval(saveGame, 30000);               // auto-save every 30 seconds
+  mainLoopInterval   = setInterval(mainGameLoop, 1000);        // main loop: every 1 second
+  stockFlucInterval  = setInterval(fluctuateStockPrices, 2000); // Update 3: was 5s
+  cryptoFlucInterval = setInterval(fluctuateCryptoPrices, 3000); // Update 3: separate ticker
+  autoSaveInterval   = setInterval(saveGame, 30000);           // auto-save every 30 seconds
 
   // ── Intro dialogue (new games only) ──────────────────────────
   if (!gameState.hasSeenIntro) {
@@ -1183,7 +1309,39 @@ window.addEventListener("DOMContentLoaded", function () {
 
   // Wire up all button handlers
   const moneyBtn = document.getElementById("money-btn");
-  if (moneyBtn) moneyBtn.addEventListener("click", handleMoneyClick);
+  if (moneyBtn) {
+    // Regular click — skip if a mouse-hold just ended (Power Click already fired the earns)
+    moneyBtn.addEventListener("click", function (e) {
+      if (mouseHoldActivated) { mouseHoldActivated = false; return; }
+      handleMoneyClick(e);
+    });
+
+    // ── MOUSE HOLD = POWER CLICK ──────────────────────────────
+    // Holding the button > 150ms activates Power Click, same as Enter/Space.
+    // Quick taps bypass this entirely so normal single clicks are unaffected.
+    moneyBtn.addEventListener("mousedown", function (e) {
+      if (e.button !== 0) return; // left button only
+      mouseHoldActivated = false;
+      mouseHoldTimer = setTimeout(function () {
+        mouseHoldTimer     = null;
+        mouseHoldActivated = true;
+        startPowerClick();
+      }, 150);
+    });
+
+    function cancelMouseHold() {
+      if (mouseHoldTimer !== null) {
+        clearTimeout(mouseHoldTimer);
+        mouseHoldTimer = null;
+        // Held < 150ms — Power Click never started; let the click event fire normally
+      } else if (powerClickActive) {
+        stopPowerClick();
+      }
+    }
+
+    moneyBtn.addEventListener("mouseup",    cancelMouseHold);
+    moneyBtn.addEventListener("mouseleave", cancelMouseHold);
+  }
 
   const nextBtn = document.getElementById("uncle-next-btn");
   if (nextBtn) nextBtn.addEventListener("click", advanceDialogue);
@@ -1204,16 +1362,24 @@ window.addEventListener("DOMContentLoaded", function () {
     submitBtn.addEventListener("click", handleUsernameSubmit);
   }
 
-  // Pre-fill username if we recognise this browser from a previous visit
+  // Pre-fill username (and password) if we recognise this browser
   const savedUsername = localStorage.getItem("empire_username");
+  const passwordInput = document.getElementById("password-input");
   if (savedUsername && usernameInput) {
     usernameInput.value = savedUsername;
     const hint = document.getElementById("username-hint");
     if (hint) hint.textContent = "Welcome back! Press Enter to continue, or type a new name.";
+
+    // Pre-fill saved password — returning player just presses Enter
+    const savedPwLocal = localStorage.getItem("empire_password_" + savedUsername);
+    if (savedPwLocal && passwordInput) {
+      passwordInput.value = savedPwLocal;
+      const pwHint = document.getElementById("password-hint");
+      if (pwHint) pwHint.textContent = "Password saved — just press Enter to jump back in!";
+    }
   }
 
   // Password input — pressing Enter submits the form
-  const passwordInput = document.getElementById("password-input");
   if (passwordInput) {
     passwordInput.addEventListener("keydown", function (e) {
       if (e.key === "Enter") handleUsernameSubmit();
@@ -1244,7 +1410,7 @@ window.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("keyup", function (e) {
     if (e.key === "Enter" || e.key === " ") {
       heldKeys.delete(e.key);
-      stopPowerClick(true); // releasing key triggers cooldown
+      stopPowerClick(); // releasing key triggers cooldown
     }
   });
 
@@ -1259,11 +1425,33 @@ window.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("mouseover", function (e) {
     let target = e.target;
     let reason = null;
+
     while (target && target !== document.body) {
-      reason = target.getAttribute("data-locked-reason");
-      if (reason) break;
+
+      // Case 1: Element is inside a panel that is currently locked
+      const isInsideLockedPanel = target.closest(".panel-locked") !== null;
+
+      // Case 2: Element is a locked asset card
+      const isLockedCard = target.classList &&
+        (target.classList.contains("yacht-card-locked") ||
+         target.classList.contains("sector-mgr-locked") ||
+         target.classList.contains("asset-card-locked"));
+
+      if (isInsideLockedPanel || isLockedCard) {
+        reason = target.getAttribute("data-locked-reason");
+        if (reason) break;
+      }
+
+      // Case 3: Element is a disabled button with a lock reason
+      // (e.g. cannot afford upgrade — valid regardless of panel lock state)
+      if (target.tagName === "BUTTON" && target.disabled) {
+        reason = target.getAttribute("data-locked-reason");
+        if (reason) break;
+      }
+
       target = target.parentElement;
     }
+
     if (reason) {
       lockTooltip.textContent   = "🔒 " + reason;
       lockTooltip.style.display = "block";

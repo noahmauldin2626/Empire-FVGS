@@ -17,7 +17,7 @@
 <div id="username-screen">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.3 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 6.0 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -41,15 +41,15 @@
       Letters and numbers only · Max 20 characters · Same name = same save on any device ☁️
     </div>
 
-    <!-- Password field — hidden until username is submitted once.
-         JS shows/hides this and sets the label text based on
-         whether the returning player has a saved password.     -->
-    <div id="password-field-wrap" style="display:none; width:100%; margin-top:0.8rem;">
-      <div class="username-label" id="password-label">Password:</div>
+    <!-- Password field — always visible alongside the username field.
+         Pre-filled from localStorage on returning visits so the
+         player can just press Enter to jump straight back in.   -->
+    <div id="password-field-wrap" style="width:100%; margin-top:0.8rem;">
+      <div class="username-label" id="password-label">🔑 Password:</div>
       <input
         type="password"
         id="password-input"
-        placeholder="Enter password"
+        placeholder="New player? Set a password. Returning? Enter yours."
         maxlength="50"
         autocomplete="current-password"
         style="width:100%; padding:0.6rem 0.9rem; border:2px solid rgba(255,215,0,0.5);
@@ -57,7 +57,7 @@
                font-family:inherit; font-size:1rem; text-align:center; outline:none;"
       />
       <div id="password-hint" class="username-hint" style="font-size:0.8rem;">
-        Choose a password to protect your save.
+        Your password is saved so you only need to press Enter next time.
       </div>
     </div>
 
@@ -88,7 +88,7 @@
 <div id="intro-screen" style="display:none;">
 
   <div class="intro-logo">💰 EMPIRE 💰</div>
-  <div class="intro-tagline">by Flaco's Video Game Studio — Update 5.6.3 Live</div>
+  <div class="intro-tagline">by Flaco's Video Game Studio — Update 6.0 Live</div>
 
   <div class="intro-uncle">🤑</div>
   <div class="intro-uncle-name">UNCLE FUNDS says:</div>
@@ -126,11 +126,11 @@
      Appears on top of everything when the player beats Bill Naire.
      ════════════════════════════════════════════════════════════ -->
 <div id="win-screen">
-  <div class="win-emoji">👑🤑👑</div>
+  <div class="win-emoji">👑💰👑</div>
   <div class="win-title">YOU WON!</div>
   <p class="win-congrats">
     Congratulations, <strong id="win-player-name"></strong>!<br>
-    You dethroned Bill Naire and became the richest person on Earth.<br>
+    You dethroned Elon Muskrat and built the greatest empire the world has ever known.<br>
     Uncle Funds is absolutely WEEPING right now.
   </p>
 
@@ -157,8 +157,16 @@
     </div>
   </div>
 
-  <!-- calls playAgain() in game.js — resets save but keeps username -->
-  <button id="play-again-btn" class="btn-play-again">🔄 Play Again</button>
+  <div class="win-btn-row">
+    <button id="play-again-btn" class="btn-play-again"
+            onclick="playAgain()">
+      🔄 Restart
+    </button>
+    <button id="keep-going-btn" class="btn-keep-going"
+            onclick="keepGoing()">
+      ♾️ Keep Going
+    </button>
+  </div>
 </div><!-- /win-screen -->
 
 
@@ -172,7 +180,7 @@
   <div class="modal-inner modal-changelog">
 
     <div class="modal-header">
-      <span>📋 What's New — Update 5.6.3</span>
+      <span>📋 What's New — Update 6.0</span>
       <!-- X button calls dismissChangelog() in game.js -->
       <button class="modal-close-btn" onclick="dismissChangelog()">✕</button>
     </div>
@@ -182,53 +190,25 @@
 
       <ul class="changelog-list">
         <li>
-          <strong>Airline Fleet</strong> —
-          Galactic Airlines now works like Yacht Empire. Owning the business
-          unlocks an Airline Fleet panel where you can buy and rent out 5
-          airline routes, from a tiny Puddle Jumper to the legendary
-          Galactic One. Fleet tier is gated by your Galactic Airlines
-          upgrade level.
+          <strong>Bug Fix: Restart Interval Stacking</strong> —
+          Restarting the game multiple times no longer causes game
+          loops to multiply. Each restart now cleanly replaces the
+          previous intervals.
         </li>
         <li>
-          <strong>Sector Managers</strong> —
-          5 new specialist managers, one for each major income sector:
-          Real Estate, Stocks &amp; Crypto (shared), Businesses,
-          Airline Fleet, and Yacht Fleet. Each manager boosts their
-          sector's passive income by up to 3× at max level. Upgradeable
-          through 4 levels. Find them in the Manager panel.
+          <strong>Bug Fix: Sector Manager Salaries</strong> —
+          Sector manager salary deductions can no longer push your
+          cash below zero.
         </li>
         <li>
-          <strong>Locked Item Tooltips</strong> —
-          Hovering any locked card, button, or panel now shows a tooltip
-          explaining exactly what you need to unlock it. No more guessing.
-        </li>
-        <li>
-          <strong>Power Click Tuned</strong> —
-          Hold ENTER or SPACE to activate. Duration reduced from 15s to
-          10s for a tighter, more intentional burst. 3-second cooldown
-          unchanged.
+          <strong>Bug Fix: Power Click Cleanup</strong> —
+          Internal cleanup to the Power Click stop logic. No
+          behaviour change — just tidier code under the hood.
         </li>
       </ul>
-
-      <p style="font-size:0.78rem; color:#757575; margin: 0.5rem 0 0.25rem; font-weight:700;">
-        5.6.2 — 5.6.3 Patch Notes
-      </p>
-      <ul class="changelog-list">
-        <li>
-          <strong>Airline Fleet Unlock Fix</strong> —
-          Airline Fleet now unlocks independently at $50M net worth,
-          separate from the Yacht Fleet ($100M). Get in the air sooner.
-        </li>
-        <li>
-          <strong>UI Layout Fix</strong> —
-          Airline Fleet panel now appears to the left of Yacht Fleet
-          in the bottom row, matching the unlock order ($50M before $100M).
-        </li>
-      </ul>
-
       <button class="btn btn-buy" onclick="dismissChangelog()"
               style="width:100%; margin-top:1rem;">
-        Let's Go! 💰
+        Let's Go!
       </button>
     </div>
 
@@ -308,6 +288,45 @@
 
 
 <!-- ════════════════════════════════════════════════════════════
+     LIFESTYLE MODAL (Update 5.8)
+     Opens when the player clicks "🌴 Lifestyle" in the top bar.
+     ════════════════════════════════════════════════════════════ -->
+<div id="lifestyle-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-inner" style="max-width:520px;">
+    <div class="modal-header">
+      <span>🌴 Lifestyle</span>
+      <button class="modal-close-btn" onclick="closeLifestyle()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div class="lifestyle-tabs">
+        <button class="lifestyle-tab lifestyle-tab-active" onclick="switchLifestyleTab('vacations')">🏖️ Vacations</button>
+        <button class="lifestyle-tab" onclick="switchLifestyleTab('staff')">💼 Staff</button>
+        <button class="lifestyle-tab" onclick="switchLifestyleTab('experiences')">✨ Experiences</button>
+      </div>
+      <div id="lifestyle-content" style="padding:1rem;"></div>
+    </div>
+  </div>
+</div><!-- /lifestyle-modal -->
+
+
+<!-- ════════════════════════════════════════════════════════════
+     SILLY SHOP MODAL (Update 5.8)
+     Opens when the player clicks "🎉 Silly Shop" in the top bar.
+     ════════════════════════════════════════════════════════════ -->
+<div id="silly-shop-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-inner" style="max-width:500px;">
+    <div class="modal-header">
+      <span>🎉 Silly Shop</span>
+      <button class="modal-close-btn" onclick="closeSillyShop()">✕</button>
+    </div>
+    <div class="modal-body" id="silly-shop-content"></div>
+  </div>
+</div><!-- /silly-shop-modal -->
+
+
+
+
+<!-- ════════════════════════════════════════════════════════════
      MAIN GAME SCREEN
      Hidden until the player has entered their username and
      either selected a character (new) or had their save loaded (returning).
@@ -334,6 +353,11 @@
     </div>
 
     <div class="top-stat">
+      <span class="top-stat-label">💸 Bills</span>
+      <span class="top-stat-value bills-display" id="display-bills">$0/sec</span>
+    </div>
+
+    <div class="top-stat">
       <span class="top-stat-label">🖱️ Per Click</span>
       <span class="top-stat-value" id="display-click">$1</span>
     </div>
@@ -356,12 +380,21 @@
     <button class="top-action-btn" onclick="openDealership()">🚗 Dealership</button>
     <button class="top-action-btn" onclick="openGarage()">🏎️ Garage</button>
     <button class="top-action-btn" onclick="openHome()">🏠 My Home</button>
-    <button class="top-action-btn" onclick="showChangelog()">📋 Changelog</button>
+    <button class="top-action-btn" onclick="openLifestyle()">🌴 Lifestyle</button>
+    <button class="top-action-btn" onclick="openSillyShop()">🎉 Silly Shop</button>
+<button class="top-action-btn" onclick="showChangelog()">📋 Changelog</button>
     <button class="top-action-btn" onclick="openSettings()">⚙️ Settings</button>
 
     <!-- Wipes this player's save and returns to the username screen -->
     <button class="top-reset-btn" onclick="resetGame()">🔄 Reset</button>
   </div><!-- /top-bar -->
+
+  <!-- Update 5.9: Legacy Mode banner — shown after player beats rank 1 and keeps going -->
+  <div id="legacy-banner" style="display:none;">
+    <span class="legacy-banner-text">
+      👑 LEGACY MODE — You conquered the list. Now grow forever. ♾️
+    </span>
+  </div>
 
 
   <!-- ── MAIN CONTENT (3-column layout) ─────────────────────── -->
@@ -389,7 +422,7 @@
 
       <!-- Update 5.1: Power Click indicator — shows ready / active / cooldown -->
       <div id="power-click-indicator" class="power-click-indicator power-click-ready">
-        Hold ENTER or SPACE for Power Click
+        Hold ENTER, SPACE or the button for Power Click
       </div>
 
       <div class="click-value-display">
@@ -398,26 +431,29 @@
 
       <div id="rich-list-display"></div>
 
+      <div id="flex-section">
+        <div id="flex-header" onclick="toggleFlex()">
+          🏆 Trophy Room <span id="flex-toggle-arrow">▼</span>
+        </div>
+        <div id="flex-content" style="display:none;"></div>
+      </div>
+
     </div><!-- /center-panel -->
 
-    <!-- RIGHT PANEL — Stocks + Crypto (tabbed, unlocks Chapter 2)
+    <!-- RIGHT PANEL — Stocks + Crypto + Portfolio (tabbed, unlocks Chapter 2)
          Update 3: The single Stocks panel is now a two-tab panel.
          Tab 1: 📈 Stocks  (existing system)
          Tab 2: 🪙 Crypto  (new in Update 3)
-         switchTab() in crypto.js handles tab switching.
-         The panel-header holds the tab buttons instead of a plain title. -->
+         Tab 3: 📊 Portfolio (new in Update 5.8.1)
+         switchTab() in crypto.js handles tab switching. -->
     <div id="right-panel" class="panel panel-locked">
 
       <!-- Tab buttons replace the old single-line header title -->
       <div class="panel-header tab-header"
            data-locked-reason="Earn $2,000 total to unlock the market!">
-        <!-- Default active tab is Stocks -->
-        <button class="tab-btn tab-active" id="tab-stocks" onclick="switchTab('stocks')">
-          📈 Stocks
-        </button>
-        <button class="tab-btn" id="tab-crypto" onclick="switchTab('crypto')">
-          🪙 Crypto
-        </button>
+        <button class="tab-btn tab-active" id="tab-stocks" onclick="switchTab('stocks')">Stocks</button>
+        <button class="tab-btn" id="tab-crypto" onclick="switchTab('crypto')">Crypto</button>
+        <button class="tab-btn" id="tab-portfolio" onclick="switchTab('portfolio')">Portfolio</button>
       </div>
 
       <div class="panel-body">
@@ -429,13 +465,15 @@
           </p>
         </div>
 
-        <!-- CRYPTO content — hidden by default, shown when crypto tab is active.
-             renderCrypto() in crypto.js fills this div. -->
+        <!-- CRYPTO content — hidden by default -->
         <div id="crypto-list" style="display:none;">
           <p style="color:#9e9e9e; font-size:0.85rem; text-align:center; padding:1rem;">
             Earn $2,000 total to unlock the crypto market!
           </p>
         </div>
+
+        <!-- PORTFOLIO content — hidden by default, rendered by renderPortfolio() -->
+        <div id="portfolio-list" style="display:none;"></div>
 
       </div>
     </div><!-- /right-panel -->
@@ -537,7 +575,7 @@
         <div class="settings-row" style="flex-direction:column; gap:0.4rem;">
           <label class="settings-label">New Password:</label>
           <input type="password" id="settings-new-password"
-                 placeholder="Enter new password (blank = remove password)"
+                 placeholder="Enter new password"
                  maxlength="50" class="settings-input" />
           <button class="btn btn-buy" onclick="changePassword()" style="width:100%;">
             💾 Save Password
@@ -558,6 +596,19 @@
         </div>
       </div>
 
+      <hr style="margin:1.2rem 0; border-color:#e0e0e0;" />
+
+      <!-- APPEARANCE SECTION (Update 5.8) -->
+      <div class="settings-section">
+        <div class="settings-section-title">🎨 Appearance</div>
+        <div class="settings-row">
+          <label class="settings-label">Theme</label>
+          <div class="theme-toggle-wrap">
+            <button class="theme-btn" id="theme-btn-dark" onclick="setTheme('dark')">🌙 Dark</button>
+            <button class="theme-btn theme-btn-active" id="theme-btn-light" onclick="setTheme('light')">☀️ Light</button>
+          </div>
+        </div>
+      </div>
       <hr style="margin:1.2rem 0; border-color:#e0e0e0;" />
 
       <!-- AUDIO SECTION -->
@@ -646,6 +697,7 @@
 <!-- Update 3: New feature files — must load BEFORE game.js -->
 <script src="crypto.js"></script>    <!-- crypto data, buy/sell, tab switching -->
 <script src="vehicles.js"></script>  <!-- cars, home — buy logic + modal rendering -->
+<script src="lifestyle.js"></script> <!-- Update 5.8: lifestyle, silly shop, trophy room, random events -->
 
 <script src="game.js"></script>  <!-- LOADS LAST — depends on everything above -->
 

@@ -35,3 +35,4 @@ const UNCLE_FUNDS = {
   portraitFallback: "🤑",   // shown if image file is missing
   catchphrase: "UNCLE FUNDS IS ALWAYS RIGHT... mostly."
 };
+

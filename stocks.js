@@ -129,6 +129,12 @@ function fluctuateStockPrices() {
 
   // Refresh the stocks panel so the player sees the new prices
   renderStocks();
+
+  // If Portfolio tab is active, keep it fresh too
+  const portfolioEl = document.getElementById("portfolio-list");
+  if (portfolioEl && portfolioEl.style.display !== "none") {
+    renderPortfolio();
+  }
 }
 
 // ── INCOME CALCULATIONS ───────────────────────────────────────
@@ -215,6 +221,11 @@ function buyStockMax(stockId) {
   }
 
   buyStockAmount(stockId, maxShares);
+
+  const portfolioEl = document.getElementById("portfolio-list");
+  if (portfolioEl && portfolioEl.style.display !== "none") {
+    renderPortfolio();
+  }
 }
 
 // ── SELL FUNCTIONS ────────────────────────────────────────────
@@ -240,6 +251,13 @@ function sellStockAmount(stockId, amount) {
 
   gameState.cash        += proceeds;
   gameState.totalEarned += proceeds;
+
+  // Reduce cost basis proportionally so break-even stays correct after partial sells
+  const spent = gameState.stockSpent[stockId] || 0;
+  if (spent > 0 && sharesOwned > 0) {
+    gameState.stockSpent[stockId] = spent * (sharesOwned - sharesToSell) / sharesOwned;
+  }
+
   gameState.ownedStocks[stockId] = sharesOwned - sharesToSell;
 
   recalculateStats();
@@ -273,6 +291,7 @@ function sellAllStock(stockId) {
   gameState.cash        += proceeds;
   gameState.totalEarned += proceeds;
   gameState.ownedStocks[stockId] = 0;
+  gameState.stockSpent[stockId]  = 0; // full sell wipes cost basis
 
   recalculateStats();
   saveGame();
@@ -280,6 +299,12 @@ function sellAllStock(stockId) {
   updateUI();
 
   showToast(`Sold all ${shares} shares for ${formatMoney(proceeds)}! 🎉`);
+
+  const portfolioEl = document.getElementById("portfolio-list");
+  if (portfolioEl && portfolioEl.style.display !== "none") {
+    renderPortfolio();
+  }
+
   return true;
 }
 

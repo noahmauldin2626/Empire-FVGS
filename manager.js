@@ -444,7 +444,7 @@ function processSectorManagerSalaries() {
   }
 
   if (totalSalary > 0) {
-    gameState.cash -= totalSalary;
+    gameState.cash = Math.max(0, gameState.cash - totalSalary);
     gameState.totalManagerSalaryPaid =
       (gameState.totalManagerSalaryPaid || 0) + totalSalary;
   }

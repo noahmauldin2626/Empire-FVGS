@@ -107,86 +107,97 @@ const DIALOGUE_TRIGGERS = {
     "You're basically a CEO now. Welcome to the club. The jacket is in the mail."
   ],
 
-  // ── RICH LIST RANK MILESTONES ─────────────────────────────
+  // ── RICH LIST RANK MILESTONES (Update 5.9) ────────────────
+  // Only milestone ranks fire dialogue. Most rank changes are intentionally silent.
+  rank_50: [
+    "You just knocked BARRY FENCER off the list. Barry who? EXACTLY.",
+    "Fifty people used to be richer than you. Now it is forty-nine.",
+    "The climb begins, {pronoun}. Uncle Funds believes in you. Mostly."
+  ],
+
+  rank_40: [
+    "Top 40! You are in the charts, {pronoun}! The RICH charts!",
+    "Doug Earnsworth is out. He was not even that impressive honestly.",
+    "Keep going. Thirty-nine more people to humiliate financially."
+  ],
+
+  rank_30: [
+    "TOP THIRTY. You are in the upper third of this list.",
+    "Abigail Bullmarket did not see you coming. Nobody does.",
+    "The names are getting MORE impressive from here. Buckle up."
+  ],
+
+  rank_20: [
+    "TOP TWENTY. These are ACTUAL billionaires you are overtaking.",
+    "Mukesh Ambrosia is SHAKING. A little. He has a lot of money still.",
+    "{pronoun} is no longer playing around. This is REAL wealth now."
+  ],
+
+  rank_15: [
+    "Top FIFTEEN! You are in the room where it happens, {pronoun}!",
+    "Larry Pager had sixty BILLION dollars. You just passed him.",
+    "Uncle Funds needs to lie down. This is a LOT."
+  ],
+
   rank_10: [
-    "RANK TEN! You cracked the top 10! Penny Pincher is absolutely fuming right now.",
-    "She spent YEARS getting to $50K and you just walked right past her. Legendary. Rude. But legendary."
-  ],
-
-  rank_9: [
-    "Nick L. Dime is GONE! Passed like he was standing still! Because he was standing still.",
-    "Top 9, {pronoun}! The Rich List is shaking! Well. Slightly trembling. But still!"
-  ],
-
-  rank_8: [
-    "Richie Poorman is having a MELTDOWN. He's rich but poorly named, and now he's poorly RANKED.",
-    "Top 8! Keep going! The real money is at the top!"
-  ],
-
-  rank_7: [
-    "Cashy McKashface! Defeated! That name was always suspicious, frankly.",
-    "Top 7! You are now officially in the upper half of the World Rich List!"
-  ],
-
-  rank_6: [
-    "DOLLY BILLIONS. DOWN. A BILLION was not enough to save her today!",
-    "Top 6, {pronoun}! Bill Naire is starting to notice you. He doesn't look happy."
+    "TOP TEN. The actual global elite. You belong here now.",
+    "Amancio Ortego built a fashion empire. You built THIS.",
+    "Three hundred billion net worth territory. Let that sink in."
   ],
 
   rank_5: [
-    "HUGH MUNGUS WEALTH is HUMBLED! Five million was not enough! Nothing is ever enough!",
-    "Top FIVE! You cracked it! Bill Naire is shaking in his Italian loafers!"
+    "TOP FIVE ON EARTH. Jeff Beezos is RIGHT THERE.",
+    "Five people. On the entire PLANET. Are richer than {pronoun}.",
+    "Uncle Funds is filing this moment under GREATEST OF ALL TIME."
   ],
 
   rank_4: [
-    "Warren Buffet-TABLE! Knocked flat off his chair! A table! Get it?! Because his name is—",
-    "Top 4! Twelve million dollars in his pocket and it still wasn't enough. More is always more, {pronoun}."
+    "Bernard Arno. Five hundred BILLION. Gone. You took it.",
+    "Four left. Four people between you and the top of the world.",
+    "The air is thin up here, {pronoun}. You were built for it."
   ],
 
   rank_3: [
-    "JEFF BEEZOS! THE DELIVERY MAN! DELIVERED... A LOSS! To himself! Ha!",
-    "Third place! You are thirty million dollars closer to the top than when you started. INCREDIBLE."
+    "THREE. You are the third richest person on the planet.",
+    "Six hundred BILLION dollars. Uncle Funds cannot count this high.",
+    "Two rivals. One throne. Elon Muskrat is watching."
   ],
 
   rank_2: [
-    "Elon MUSKRAT! Sent to the moon! The BAD moon! The moon where you LOSE!",
-    "SECOND PLACE! Seventy-five million dollars and he's BEHIND YOU.",
-    "Bill Naire is all that stands between you and the crown. One final push, {pronoun}. ONE FINAL PUSH."
-  ],
-
-  // ── SUPER-TIER RANK MILESTONES (Update 4) ─────────────────
-  "rank_-1": [
-    "BILL NAIRE IS DETHRONED! But wait... there are people ABOVE him?!",
-    "Sir Spendsalot is looking down at you, {pronoun}. LOOKING DOWN. That ends TODAY.",
-    "Half a BILLION dollars to beat him. You've come so far. Don't stop now."
-  ],
-
-  "rank_-2": [
-    "Goldie Vaultsworth hoards gold like a dragon hoards treasure. TAKE IT ALL.",
-    "One BILLION dollars. That's ten with eight zeroes. You just passed it, {pronoun}.",
-    "Uncle Funds is literally shaking right now. SHAKING."
-  ],
-
-  "rank_-3": [
-    "THE YACHT LORD. The person who NAMED themselves The Yacht Lord.",
-    "Two and a half BILLION. And you sailed right past them like it was nothing.",
-    "Their yachts are now YOUR yachts. Metaphorically. Actually. BOTH."
-  ],
-
-  "rank_-4": [
-    "Madame Trillionaire is calling her lawyers. SEVENTEEN of them.",
-    "FIVE BILLION DOLLARS net worth, {pronoun}. Do you understand what you've DONE?",
-    "One more. Just ONE more rival stands between you and total domination. THE MONEY GHOST."
+    "SECOND. You are SECOND. Jeff Beezos Sr. just lost his spot.",
+    "Eight hundred billion dollars. One person left.",
+    "Elon Muskrat at ONE TRILLION. That is what stands between you and EVERYTHING."
   ],
 
   // ── WIN ────────────────────────────────────────────────────
   win: [
-    "...Is this real? Am I dreaming? PINCH ME. ...OW. Okay it's real.",
-    "THE MONEY GHOST. TEN BILLION DOLLARS. GONE. Defeated by my {pronoun}!",
-    "You didn't just build an empire. You became a LEGEND. A MYTH. A GHOST STORY.",
-    "I taught you EVERYTHING. The properties, stocks, businesses, yachts — ALL ME.",
-    "Well. You did the clicking. But I was VERY encouraging.",
-    "EMPIRE. You built one. Uncle Funds has NEVER been more proud. Check your win screen!"
+    "ONE. TRILLION. DOLLARS.",
+    "Elon Muskrat is DETHRONED. By YOU. By {pronoun}.",
+    "There is no one left. You are the richest being on Earth. Possibly in history.",
+    "Uncle Funds is retired. Weeping. Proud. Mostly weeping.",
+    "EMPIRE. You built one. A real one. Congratulations."
+  ],
+
+  // ── LEGACY MODE (Update 5.9) ───────────────────────────────
+  legacy_mode: [
+    "You chose to KEEP GOING. Uncle Funds respects this immensely.",
+    "There is no one left to beat, {pronoun}. So we beat OURSELVES.",
+    "How much can one person accumulate? Let us find out. TOGETHER.",
+    "The scoreboard is yours now. Write whatever number you want on it."
+  ],
+
+  // ── BILLS & TAXES (Update 5.6.4) ──────────────────────────
+  first_bill: [
+    "Ah, {pronoun}! A word about... expenses.",
+    "Real empires have COSTS. Maintenance, operating fees, brokerage charges — the works.",
+    "Your bills are deducted from your cash automatically every second. No late fees.",
+    "Uncle Funds is NOT the IRS. But the bills are real. Keep that income HIGHER than your bills!"
+  ],
+
+  bills_growing: [
+    "Bills going UP, {pronoun}! That's what happens when you own HALF THE WORLD.",
+    "More assets = more maintenance = more bills. This is economics. Uncle Funds learned it the hard way.",
+    "Keep that passive income GROWING and you'll barely notice. Probably."
   ],
 
   // ── CHAPTER 5: YACHT FLEET (Update 4) ────────────────────
@@ -229,6 +240,24 @@ const DIALOGUE_TRIGGERS = {
     "A HYPERCAR. You just spent MILLIONS on a car that cannot legally use its top speed ANYWHERE.",
     "That is the most unhinged thing you have ever done. Uncle Funds has NEVER been more proud.",
     "The road isn't ready for you, {pronoun}. The road is not WORTHY of you."
+  ],
+
+  // ── UPDATE 5.8: LIFESTYLE & SILLY TRIGGERS ─────────────────
+  first_lifestyle: [
+    "A LIFESTYLE PURCHASE. Not an investment. Not income. Just... FUN.",
+    "{pronoun} is spending money on LIVING. Uncle Funds approves FULLY.",
+    "The point of being rich is THIS. Remember that."
+  ],
+
+  first_silly: [
+    "I... what. WHAT did you just buy.",
+    "Uncle Funds has helped build many empires. Never seen THIS.",
+    "I respect it. I do not understand it. I RESPECT it."
+  ],
+
+  first_vacation: [
+    "A vacation! Genius! The passive income runs while you're GONE.",
+    "You are getting paid to relax, {pronoun}. This is the DREAM."
   ]
 
 };
