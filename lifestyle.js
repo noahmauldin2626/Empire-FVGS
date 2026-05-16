@@ -35,16 +35,86 @@ const LIFESTYLE_DATA = {
 
 // ── SILLY ITEMS DATA ────────────────────────────────────────────
 const SILLY_ITEMS = [
-  { id: "emotional_support_accountant", name: "Emotional Support Accountant", emoji: "😭💼", description: "He doesn't do your taxes. He just listens. $800/hour.",                                                     price: 10000,     uncleReaction: "That is the most unhinged financial decision I have ever seen. I respect it." },
-  { id: "pet_dinosaur",                 name: "Pet Dinosaur (Clone)",          emoji: "🦕",   description: "Legally questionable. Scientifically impressive. Eats a lot.",                                               price: 5000000,   uncleReaction: "You bought a DINOSAUR. A CLONED DINOSAUR. I have no words. Many emotions." },
-  { id: "gold_toilet",                  name: "24K Gold Toilet",               emoji: "🚽",   description: "Fully functional. Completely unnecessary. Absolutely mandatory.",                                            price: 100000,    uncleReaction: "A gold toilet. You bought a GOLD TOILET. Uncle Funds is not surprised. Uncle Funds is a little jealous." },
-  { id: "moon_plot",                    name: "Plot of Land on the Moon",      emoji: "🌕",   description: "Certificate of ownership included. Legally meaningless. Spiritually powerful.",                             price: 250000,    uncleReaction: "You own the MOON. Part of it. A certificate says so. This is either genius or nonsense. Both." },
-  { id: "doomsday_bunker",              name: "Personal Doomsday Bunker",      emoji: "🏚️",  description: "10 years of supplies. A pool table. No windows. Just in case.",                                            price: 2000000,   uncleReaction: "Smart. Very smart actually. Uncle Funds wants one. Does it have a snack room?" },
-  { id: "rename_city",                  name: "Rename a City After Yourself",  emoji: "🏙️",  description: "A small city in rural Nevada is now named after you. Population: 47.",                                     price: 10000000,  uncleReaction: "A CITY. Named after YOU. Those 47 people will tell their grandchildren. Probably." },
-  { id: "diamond_toothbrush",           name: "Diamond-Encrusted Toothbrush", emoji: "💎🪥", description: "Your dentist said this was unnecessary. You said goodbye to that dentist.",                                price: 50000,     uncleReaction: "Your teeth will be the richest teeth on the planet. Uncle Funds has no notes." },
-  { id: "submarine",                    name: "Personal Submarine",            emoji: "🤿",   description: "Yellow. Fully operational. You have been to the bottom of the ocean once.",                                price: 8000000,   uncleReaction: "A SUBMARINE. For fun. You go UNDER the ocean for fun now. Incredible. Unhinged. Perfect." },
-  { id: "statue_of_self",               name: "Commission a Statue of Yourself", emoji: "🗿", description: "Bronze. Life-size. In your front yard. Neighbors have opinions.",                                         price: 500000,    uncleReaction: "A statue. Of YOU. In YOUR yard. Uncle Funds is ordering one of himself immediately." },
-  { id: "buy_a_cloud",                  name: "Name a Cloud Formation",        emoji: "☁️",   description: "Meteorologists refused. A guy on Etsy agreed. It is named after you now.",                                price: 200,       uncleReaction: "You named a CLOUD. For two hundred dollars. That might be the best deal you have ever made." }
+  {
+    id: "emotional_support_accountant",
+    name: "Emotional Support Accountant",
+    emoji: "😭💼",
+    description: "He holds your hand through every market dip. Cries with you. Charges $800 an hour. Worth every penny, emotionally speaking.",
+    price: 10000,
+    uncleReaction: "You hired a man JUST to feel your financial pain with you. Uncle Funds is both horrified and deeply moved. Mostly horrified."
+  },
+  {
+    id: "pet_dinosaur",
+    name: "Pet Dinosaur (Clone)",
+    emoji: "🦕",
+    description: "Cloned from ancient DNA. Eats roughly the GDP of a small nation per week. Fully legal in three states. Yours forever.",
+    price: 5000000,
+    uncleReaction: "You own a LIVING DINOSAUR. On PURPOSE. Uncle Funds is calling every scientist he knows. None of them will believe this."
+  },
+  {
+    id: "gold_toilet",
+    name: "24K Gold Toilet",
+    emoji: "🚽",
+    description: "Twenty-four karat. Custom engraved. The most important throne in your estate. Function meets flex at the highest possible level.",
+    price: 100000,
+    uncleReaction: "This is the most powerful purchase you have ever made and you will never be able to explain why. Uncle Funds salutes you."
+  },
+  {
+    id: "moon_plot",
+    name: "Plot of Land on the Moon",
+    emoji: "🌕",
+    description: "Deed registered. Coordinates assigned. The moon has a new owner on paper. NASA has been formally notified. They did not respond.",
+    price: 250000,
+    uncleReaction: "You own SPACE REAL ESTATE. The moon cannot stop you. Physics cannot stop you. Nothing can stop you. Nothing."
+  },
+  {
+    id: "doomsday_bunker",
+    name: "Personal Doomsday Bunker",
+    emoji: "🏚️",
+    description: "Twelve feet underground. Blast doors. Ten years of provisions. A cinema room. Climate controlled. You are ready for anything and nothing will ever happen and that is also fine.",
+    price: 2000000,
+    uncleReaction: "Uncle Funds has been saying this for years. YEARS. Finally someone listened. Does it have a second bedroom? Asking for me."
+  },
+  {
+    id: "rename_city",
+    name: "Rename a City After Yourself",
+    emoji: "🏙️",
+    description: "Population forty-seven. One stoplight. A diner that makes extraordinary pie. All of it now bears your name on every sign, map, and official document in the county.",
+    price: 10000000,
+    uncleReaction: "A CITY. Your name on ROAD SIGNS. Those forty-seven people wake up every morning in a town named after YOU. Magnificent."
+  },
+  {
+    id: "diamond_toothbrush",
+    name: "Diamond-Encrusted Toothbrush",
+    emoji: "💎🪥",
+    description: "Bristles infused with crushed diamond. Handle solid platinum. Your dentist called it unnecessary. You called it a Tuesday. Your smile is now technically the most valuable thing in the room.",
+    price: 50000,
+    uncleReaction: "Your TEETH are wealthier than most people. Uncle Funds needs to go lie down. This is the pinnacle. This is the summit."
+  },
+  {
+    id: "submarine",
+    name: "Personal Submarine",
+    emoji: "🤿",
+    description: "Forty feet long. Full sonar. A wet bar that operates at depth. You have personally visited the bottom of the Atlantic Ocean and described it as quote: kind of dark down there.",
+    price: 8000000,
+    uncleReaction: "You go UNDER THE WATER. For FUN. In YOUR OWN submarine. Uncle Funds cannot swim. He is choosing not to be jealous. He is failing. He is very jealous."
+  },
+  {
+    id: "statue_of_self",
+    name: "Commission a Statue of Yourself",
+    emoji: "🗿",
+    description: "Bronze. Eight feet tall. Heroic pose. One thumb up. Installed in the front garden facing the street so everyone driving past knows exactly whose house this is.",
+    price: 500000,
+    uncleReaction: "A monument to yourself. In your own yard. Facing outward. Uncle Funds ordered one immediately. It arrives Thursday."
+  },
+  {
+    id: "buy_a_cloud",
+    name: "Name a Cloud Formation",
+    emoji: "☁️",
+    description: "Not officially recognized by any meteorological body on Earth. Fully recognized by one guy on Etsy with a certificate printer. Your cloud drifts over seven states and answers to no one.",
+    price: 200,
+    uncleReaction: "Two hundred dollars. You spent TWO HUNDRED DOLLARS and now you own weather. That is the best return on investment in the history of this game. Maybe history itself."
+  }
 ];
 
 // ── LIFESTYLE MODAL ─────────────────────────────────────────────
